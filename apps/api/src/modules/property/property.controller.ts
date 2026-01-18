@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { Property } from '../kysely/database';
 import { PropertyService } from './property.service';
-import { CreatePropertyDto, UpdatePropertyDto } from './types';
+import {
+  CreatePropertyDto,
+  PropertyListItem,
+  UpdatePropertyDto,
+} from './types';
 
 @Controller('properties')
 export class PropertyController {
@@ -23,7 +27,7 @@ export class PropertyController {
   }
 
   @Get()
-  async findAll(): Promise<Property[]> {
+  async findAll(): Promise<PropertyListItem[]> {
     return await this.propertyService.findAll();
   }
 

@@ -6,6 +6,7 @@ type Property = {
   managementType: 'WEG' | 'MV';
   managerId: number;
   accountantId: number;
+  buildingCount: number;
   createdAt: string;
   updatedAt: string;
 };

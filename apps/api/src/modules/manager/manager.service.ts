@@ -9,9 +9,9 @@ export class ManagerService {
   async findAll(): Promise<Pick<Manager, 'id' | 'name' | 'email'>[]> {
     return await this.kysely.db
       .selectFrom('manager')
-      .select(['id', 'name', 'email'])
-      .where('deletedAt', 'is', null)
-      .orderBy('name', 'asc')
+      .selectAll()
+      .where('manager.deletedAt', 'is', null)
+      .orderBy('manager.name', 'asc')
       .execute();
   }
 }

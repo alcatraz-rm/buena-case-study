@@ -10,6 +10,7 @@ type Property = {
   managementType: 'WEG' | 'MV';
   managerId: number;
   accountantId: number;
+  buildingCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -108,10 +109,11 @@ export function PropertiesPageClient({
 
         <section className="overflow-hidden rounded-xl border border-zinc-800">
           <div className="grid grid-cols-12 gap-3 border-b border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
-            <div className="col-span-6">Name</div>
+            <div className="col-span-5">Name</div>
             <div className="col-span-2">Type</div>
             <div className="col-span-2">Manager</div>
             <div className="col-span-2">Accountant</div>
+            <div className="col-span-1 text-right">Buildings</div>
           </div>
 
           <div className="divide-y divide-zinc-900">
@@ -120,7 +122,7 @@ export function PropertiesPageClient({
                 key={p.id}
                 className="grid grid-cols-12 gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
               >
-                <div className="col-span-6 truncate font-medium text-zinc-100">
+                <div className="col-span-5 truncate font-medium text-zinc-100">
                   <Link
                     href={`/properties/${p.id}`}
                     className="hover:underline"
@@ -137,6 +139,9 @@ export function PropertiesPageClient({
                 <div className="col-span-2 truncate text-zinc-300">
                   {accountantLabelById.get(p.accountantId) ??
                     `#${p.accountantId}`}
+                </div>
+                <div className="col-span-1 text-right tabular-nums text-zinc-300">
+                  {p.buildingCount}
                 </div>
               </div>
             ))}

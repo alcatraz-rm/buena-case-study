@@ -21,10 +21,10 @@ export class UnitService {
     let query = this.kysely.db
       .selectFrom('buildingUnit')
       .selectAll()
-      .where('deletedAt', 'is', null);
+      .where('buildingUnit.deletedAt', 'is', null);
 
     if (buildingId !== undefined) {
-      query = query.where('buildingId', '=', buildingId);
+      query = query.where('buildingUnit.buildingId', '=', buildingId);
     }
 
     return await query.execute();
@@ -34,8 +34,8 @@ export class UnitService {
     const unit = await this.kysely.db
       .selectFrom('buildingUnit')
       .selectAll()
-      .where('id', '=', id)
-      .where('deletedAt', 'is', null)
+      .where('buildingUnit.id', '=', id)
+      .where('buildingUnit.deletedAt', 'is', null)
       .executeTakeFirst();
 
     if (!unit) {
@@ -53,9 +53,9 @@ export class UnitService {
     const result = await this.kysely.db
       .updateTable('buildingUnit')
       .set(dto)
-      .where('id', '=', id)
-      .where('buildingId', '=', buildingId)
-      .where('deletedAt', 'is', null)
+      .where('buildingUnit.id', '=', id)
+      .where('buildingUnit.buildingId', '=', buildingId)
+      .where('buildingUnit.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 
@@ -70,9 +70,9 @@ export class UnitService {
     const result = await this.kysely.db
       .updateTable('buildingUnit')
       .set({ deletedAt: new Date() })
-      .where('id', '=', id)
-      .where('buildingId', '=', buildingId)
-      .where('deletedAt', 'is', null)
+      .where('buildingUnit.id', '=', id)
+      .where('buildingUnit.buildingId', '=', buildingId)
+      .where('buildingUnit.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 
