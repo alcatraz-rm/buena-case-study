@@ -1,46 +1,49 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import { BuildingService } from './building.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
+import { Building } from '../kysely/database';
 
 @Controller('buildings')
 export class BuildingController {
   constructor(private readonly buildingService: BuildingService) {}
 
   @Post()
-  create(@Body() dto: CreateBuildingDto) {
-    return this.buildingService.create(dto);
+  async create(@Body() dto: CreateBuildingDto): Promise<void> {
+    await this.buildingService.create(dto);
   }
 
   @Get()
-  findAll() {
-    return this.buildingService.findAll();
+  async findAll(): Promise<Building[]> {
+    return await this.buildingService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.buildingService.findOne(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Building | undefined> {
+    return await this.buildingService.findOne(id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateBuildingDto,
-  ) {
-    return this.buildingService.update(id, dto);
+  ): Promise<void> {
+    await this.buildingService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.buildingService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.buildingService.remove(id);
   }
 }

@@ -1,46 +1,49 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PropertyService } from './property.service';
+import { Property } from '../kysely/database';
 
 @Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 
   @Post()
-  create(@Body() dto: CreatePropertyDto) {
-    return this.propertyService.create(dto);
+  async create(@Body() dto: CreatePropertyDto): Promise<void> {
+    await this.propertyService.create(dto);
   }
 
   @Get()
-  findAll() {
-    return this.propertyService.findAll();
+  async findAll(): Promise<Property[]> {
+    return await this.propertyService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.propertyService.findOne(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Property | undefined> {
+    return await this.propertyService.findOne(id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePropertyDto,
-  ) {
-    return this.propertyService.update(id, dto);
+  ): Promise<void> {
+    await this.propertyService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.propertyService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.propertyService.remove(id);
   }
 }

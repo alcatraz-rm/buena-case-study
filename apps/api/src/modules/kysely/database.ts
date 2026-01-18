@@ -1,4 +1,4 @@
-import type { Generated } from 'kysely';
+import type { Generated, Selectable } from 'kysely';
 
 export type ManagementType = 'WEG' | 'MV';
 
@@ -27,6 +27,8 @@ export interface PropertyTable extends BaseTable {
   declarationOfDivisionUploadedAt: Date | null;
 }
 
+export type Property = Selectable<PropertyTable>;
+
 export interface BuildingTable extends BaseTable {
   name: string;
   street: string;
@@ -36,6 +38,8 @@ export interface BuildingTable extends BaseTable {
   propertyId: number;
   country: string | null;
 }
+
+export type Building = Selectable<BuildingTable>;
 
 export interface BuildingUnitTable extends BaseTable {
   buildingId: number;
@@ -48,6 +52,8 @@ export interface BuildingUnitTable extends BaseTable {
   constructionYear: number | null;
   rooms: number | null;
 }
+
+export type BuildingUnit = Selectable<BuildingUnitTable>;
 
 export interface Database {
   manager: ManagerTable;
