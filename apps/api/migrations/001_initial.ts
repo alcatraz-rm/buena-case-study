@@ -115,7 +115,6 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('rooms', 'numeric')
     .execute();
 
-  // Allow re-creating a unit number after soft-delete by enforcing uniqueness only for active rows.
   await db.schema
     .createIndex('building_unit_building_id_number_unique_active')
     .on('buildingUnit')
