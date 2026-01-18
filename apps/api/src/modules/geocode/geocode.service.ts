@@ -1,27 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { z } from 'zod';
-import type { AddressSuggestion } from './types';
+import { TNominatimResponse, type AddressSuggestion } from './types';
 
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36';
-
-const TNominatimItem = z.object({
-  lat: z.string(),
-  lon: z.string(),
-  display_name: z.string(),
-  address: z.object({
-    road: z.string().optional(),
-    pedestrian: z.string().optional(),
-    house_number: z.string().optional(),
-    postcode: z.string().optional(),
-    city: z.string().optional(),
-    town: z.string().optional(),
-    village: z.string().optional(),
-    hamlet: z.string().optional(),
-  }),
-});
-
-const TNominatimResponse = z.array(TNominatimItem);
 
 type CacheValue = { expiresAt: number; value: AddressSuggestion[] };
 

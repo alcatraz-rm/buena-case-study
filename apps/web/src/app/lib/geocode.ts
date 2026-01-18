@@ -1,19 +1,7 @@
-import { z } from 'zod';
+import type { AddressSuggestion } from '@buena/shared';
+import { AddressSuggestionSchema } from '@buena/shared';
 
-const TAddressSuggestion = z.object({
-  label: z.string(),
-  street: z.string(),
-  houseNumber: z.string(),
-  postalCode: z.string(),
-  city: z.string(),
-  countryCode: z.string(),
-  lat: z.string(),
-  lon: z.string(),
-});
-
-const TAddressSuggestionList = z.array(TAddressSuggestion);
-
-export type AddressSuggestion = z.infer<typeof TAddressSuggestion>;
+const TAddressSuggestionList = AddressSuggestionSchema.array();
 
 export async function suggestAddresses(args: {
   apiBaseUrl: string;

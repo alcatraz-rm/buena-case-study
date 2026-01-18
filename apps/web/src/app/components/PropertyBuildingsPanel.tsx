@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
-import type { AddressSuggestion } from '../lib/geocode';
 import { suggestAddresses } from '../lib/geocode';
+import { AddressSuggestion } from '@buena/shared';
 
 type Building = {
   id: number;
