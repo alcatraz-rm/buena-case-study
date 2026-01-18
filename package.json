@@ -7,10 +7,16 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "prettier": "prettier",
+    "cspell": "cspell"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.26.2"
+  "packageManager": "pnpm@10.26.2",
+  "devDependencies": {
+    "cspell": "^9.2.0",
+    "prettier": "^3.4.2"
+  }
 }

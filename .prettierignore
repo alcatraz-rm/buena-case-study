@@ -1,0 +1,9 @@
+**/node_modules/**
+**/.next/**
+**/dist/**
+**/coverage/**
+**/.turbo/**
+**/.vercel/**
+pnpm-lock.yaml
+apps/**/pnpm-lock.yaml
+**/*.map
