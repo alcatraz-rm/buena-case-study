@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Breadcrumbs } from './Breadcrumbs';
 import { PropertyBuildingsPanel } from './PropertyBuildingsPanel';
 
 type ManagementType = 'WEG' | 'MV';
@@ -42,6 +42,7 @@ type Props = {
   buildings: Building[];
   managers: PersonOption[];
   accountants: PersonOption[];
+  initialTab?: Tab;
 };
 
 type Tab = 'details' | 'buildings';
@@ -52,14 +53,16 @@ export function PropertyDetailClient({
   buildings: initialBuildings,
   managers,
   accountants,
+  initialTab,
 }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('details');
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'details');
 
   const [property, setProperty] = useState<Property>(initialProperty);
   const [buildingCount, setBuildingCount] = useState<number>(
     initialBuildings.length,
   );
+  const [isDirty, setIsDirty] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -75,6 +78,22 @@ export function PropertyDetailClient({
   const accountantLabelById = useMemo(() => {
     return new Map(accountants.map((a) => [a.id, a.name]));
   }, [accountants]);
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (!isDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  function confirmNavigate(): boolean {
+    if (!isDirty) return true;
+    return window.confirm('You have unsaved changes. Leave this page?');
+  }
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -110,6 +129,7 @@ export function PropertyDetailClient({
       const updated = (await res.json()) as Property;
       setProperty(updated);
       setSaveOk('Saved.');
+      setIsDirty(false);
       router.refresh();
     } catch (err) {
       setSaveError(
@@ -151,12 +171,17 @@ export function PropertyDetailClient({
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
-            <Link
-              href="/"
-              className="w-fit text-sm text-zinc-400 hover:text-zinc-200"
-            >
-              ← Back to properties
-            </Link>
+            <Breadcrumbs
+              confirmNavigate={confirmNavigate}
+              items={[
+                { label: 'Properties', href: '/' },
+                {
+                  label: property.name,
+                  href: `/properties/${property.id}`,
+                  isCurrent: true,
+                },
+              ]}
+            />
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-semibold tracking-tight">
                 {property.name}
@@ -173,6 +198,11 @@ export function PropertyDetailClient({
           </div>
 
           <div className="flex items-center gap-2">
+            {isDirty && (
+              <div className="rounded-full border border-amber-900/40 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">
+                Unsaved changes
+              </div>
+            )}
             <button
               type="button"
               className="h-10 rounded-lg border border-red-900/50 bg-transparent px-4 text-sm text-red-200 hover:bg-red-950/40 disabled:opacity-60"
@@ -235,6 +265,7 @@ export function PropertyDetailClient({
                   id="name"
                   name="name"
                   defaultValue={property.name}
+                  onChange={() => setIsDirty(true)}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-700"
                   required
                 />
@@ -253,6 +284,7 @@ export function PropertyDetailClient({
                     name="managementType"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     defaultValue={property.managementType}
+                    onChange={() => setIsDirty(true)}
                   >
                     <option value="WEG">WEG</option>
                     <option value="MV">MV</option>
@@ -277,6 +309,7 @@ export function PropertyDetailClient({
                     name="managerId"
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     defaultValue={String(property.managerId)}
+                    onChange={() => setIsDirty(true)}
                   >
                     {managers.map((m) => (
                       <option key={m.id} value={String(m.id)}>
@@ -298,6 +331,7 @@ export function PropertyDetailClient({
                     name="accountantId"
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     defaultValue={String(property.accountantId)}
+                    onChange={() => setIsDirty(true)}
                   >
                     {accountants.map((a) => (
                       <option key={a.id} value={String(a.id)}>

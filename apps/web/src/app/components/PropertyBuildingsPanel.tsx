@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 type Building = {
@@ -28,6 +30,7 @@ export function PropertyBuildingsPanel({
   initialBuildings,
   onCountChange,
 }: Props) {
+  const router = useRouter();
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
 
   const [isCreateBuildingOpen, setIsCreateBuildingOpen] = useState(false);
@@ -80,6 +83,7 @@ export function PropertyBuildingsPanel({
       const created = (await res.json()) as Building;
       setBuildings((prev) => [created, ...prev]);
       setIsCreateBuildingOpen(false);
+      router.push(`/properties/${propertyId}/buildings/${created.id}`);
     } catch (err) {
       setCreateBuildingError(
         err instanceof Error ? err.message : 'Something went wrong.',
@@ -166,7 +170,14 @@ export function PropertyBuildingsPanel({
               className="flex flex-col gap-2 px-5 py-4 hover:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-zinc-100">{b.name}</div>
+                <div className="truncate text-sm font-medium text-zinc-100">
+                  <Link
+                    href={`/properties/${propertyId}/buildings/${b.id}`}
+                    className="hover:underline"
+                  >
+                    {b.name}
+                  </Link>
+                </div>
                 <div className="mt-1 truncate text-xs text-zinc-400">
                   {b.street} {b.houseNumber}, {b.postalCode} {b.city}, {b.country}
                 </div>
