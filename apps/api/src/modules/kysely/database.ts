@@ -9,10 +9,14 @@ export interface ManagerTable extends BaseTable {
   email: string;
 }
 
+export type Manager = Selectable<ManagerTable>;
+
 export interface AccountantTable extends BaseTable {
   name: string;
   email: string;
 }
+
+export type Accountant = Selectable<AccountantTable>;
 
 export interface PropertyTable extends BaseTable {
   name: string;
