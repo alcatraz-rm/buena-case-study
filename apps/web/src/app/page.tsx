@@ -17,7 +17,8 @@ type PersonOption = {
 };
 
 async function getProperties(): Promise<Property[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   const res = await fetch(`${baseUrl}/properties`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -28,7 +29,8 @@ async function getProperties(): Promise<Property[]> {
 }
 
 async function getManagers(): Promise<PersonOption[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   const res = await fetch(`${baseUrl}/managers`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -39,7 +41,8 @@ async function getManagers(): Promise<PersonOption[]> {
 }
 
 async function getAccountants(): Promise<PersonOption[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   const res = await fetch(`${baseUrl}/accountants`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -51,8 +54,12 @@ async function getAccountants(): Promise<PersonOption[]> {
 
 export default async function Home() {
   const properties = await getProperties();
-  const [managers, accountants] = await Promise.all([getManagers(), getAccountants()]);
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const [managers, accountants] = await Promise.all([
+    getManagers(),
+    getAccountants(),
+  ]);
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   return (
     <PropertiesPageClient
       properties={properties}

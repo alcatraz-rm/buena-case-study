@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -20,7 +21,12 @@ type Props = {
   accountants: { id: number; name: string; email: string }[];
 };
 
-export function PropertiesPageClient({ properties, apiBaseUrl, managers, accountants }: Props) {
+export function PropertiesPageClient({
+  properties,
+  apiBaseUrl,
+  managers,
+  accountants,
+}: Props) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,7 +61,8 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
 
       if (!name) throw new Error('Name is required.');
       if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
-      if (!Number.isFinite(accountantId)) throw new Error('Accountant is required.');
+      if (!Number.isFinite(accountantId))
+        throw new Error('Accountant is required.');
 
       const res = await fetch(`${apiBaseUrl}/properties`, {
         method: 'POST',
@@ -68,9 +75,9 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
         throw new Error(text || `Failed to create property (${res.status})`);
       }
 
+      const created = (await res.json()) as Property;
       setIsOpen(false);
-      // Re-fetch server component data
-      router.refresh();
+      router.push(`/properties/${created.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
@@ -83,7 +90,9 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Property dashboard</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Property dashboard
+            </h1>
             <p className="text-sm text-zinc-400">{countLabel}</p>
           </div>
 
@@ -112,14 +121,22 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
                 className="grid grid-cols-12 gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
               >
                 <div className="col-span-6 truncate font-medium text-zinc-100">
-                  {p.name}
+                  <Link
+                    href={`/properties/${p.id}`}
+                    className="hover:underline"
+                  >
+                    {p.name}
+                  </Link>
                 </div>
-                <div className="col-span-2 text-zinc-300">{p.managementType}</div>
+                <div className="col-span-2 text-zinc-300">
+                  {p.managementType}
+                </div>
                 <div className="col-span-2 truncate text-zinc-300">
                   {managerLabelById.get(p.managerId) ?? `#${p.managerId}`}
                 </div>
                 <div className="col-span-2 truncate text-zinc-300">
-                  {accountantLabelById.get(p.accountantId) ?? `#${p.accountantId}`}
+                  {accountantLabelById.get(p.accountantId) ??
+                    `#${p.accountantId}`}
                 </div>
               </div>
             ))}
@@ -169,7 +186,10 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid min-w-0 gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="managementType">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="managementType"
+                  >
                     Management type
                   </label>
                   <select
@@ -184,7 +204,10 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
                 </div>
 
                 <div className="grid min-w-0 gap-2">
-                  <label className="truncate text-sm text-zinc-300" htmlFor="file">
+                  <label
+                    className="truncate text-sm text-zinc-300"
+                    htmlFor="file"
+                  >
                     Teilungserklärung
                   </label>
                   <input
@@ -220,7 +243,10 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
                 </div>
 
                 <div className="grid min-w-0 gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="accountantId">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="accountantId"
+                  >
                     Accountant
                   </label>
                   <select
@@ -273,4 +299,3 @@ export function PropertiesPageClient({ properties, apiBaseUrl, managers, account
     </div>
   );
 }
-
