@@ -9,6 +9,7 @@
     "build": "nest build",
     "dev": "pnpm run start:dev",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "kysely": "kysely --experimental-resolve-tsconfig-paths --config=./.config/kysely.config.ts --cwd=.",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

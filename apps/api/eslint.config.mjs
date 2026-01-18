@@ -10,6 +10,7 @@ export default tseslint.config(
       'eslint.config.mjs',
       '.config/**',
       'migrations/**',
+      'seeds/**',
       'dist/**',
       '**/dist/**',
     ],

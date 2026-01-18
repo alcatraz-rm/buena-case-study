@@ -7,7 +7,10 @@ import { PostgresJSDialect } from 'kysely-postgres-js';
 import postgres from 'postgres';
 
 export default defineConfig({
-  $development: { seeds: { seedFolder: 'seedsDev' } },
+  migrations: {
+    migrationFolder: new URL('../migrations', import.meta.url).pathname,
+  },
+  seeds: { seedFolder: new URL('../seeds', import.meta.url).pathname },
   dialect: new PostgresJSDialect({
     postgres: postgres(process.env.DATABASE_URL ?? ''),
   }),
