@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
+import { BuildingUnitsPanel } from './BuildingUnitsPanel';
 
 type Building = {
   id: number;
@@ -32,6 +33,8 @@ type Unit = {
   floor: string | null;
   entrance: string | null;
   sizeSqm: number | null;
+  coOwnershipShare: string | null;
+  constructionYear: number | null;
   rooms: number | null;
   createdAt: string;
   updatedAt: string;
@@ -56,6 +59,7 @@ export function BuildingDetailClient({
   const [tab, setTab] = useState<Tab>('details');
 
   const [building, setBuilding] = useState<Building>(initialBuilding);
+  const [unitCount, setUnitCount] = useState<number>(units.length);
   const [isDirty, setIsDirty] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -230,7 +234,7 @@ export function BuildingDetailClient({
             ].join(' ')}
             onClick={() => setTab('units')}
           >
-            Units ({units.length})
+            Units ({unitCount})
           </button>
         </div>
 
@@ -357,55 +361,12 @@ export function BuildingDetailClient({
         )}
 
         {tab === 'units' && (
-          <section className="overflow-hidden rounded-xl border border-zinc-800">
-            <div className="flex items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-5 py-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-sm font-medium text-zinc-200">Units</h2>
-                <p className="text-xs text-zinc-400">Units linked to this building.</p>
-              </div>
-
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100 hover:bg-zinc-800"
-                aria-label="Add unit"
-                onClick={() => window.alert('Create unit is not implemented yet.')}
-              >
-                +
-              </button>
-            </div>
-
-            <div className="grid grid-cols-12 gap-3 border-b border-zinc-800 bg-zinc-950 px-5 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
-              <div className="col-span-4">Number</div>
-              <div className="col-span-3">Type</div>
-              <div className="col-span-2">Floor</div>
-              <div className="col-span-1 text-right">Rooms</div>
-              <div className="col-span-2 text-right">Size</div>
-            </div>
-
-            <div className="divide-y divide-zinc-900">
-              {units.map((u) => (
-                <div key={u.id} className="grid grid-cols-12 gap-3 px-5 py-3 text-sm">
-                  <div className="col-span-4 truncate font-medium text-zinc-100">
-                    {u.number}
-                  </div>
-                  <div className="col-span-3 truncate text-zinc-300">{u.unitType}</div>
-                  <div className="col-span-2 truncate text-zinc-300">{u.floor ?? '—'}</div>
-                  <div className="col-span-1 text-right tabular-nums text-zinc-300">
-                    {u.rooms ?? '—'}
-                  </div>
-                  <div className="col-span-2 text-right tabular-nums text-zinc-300">
-                    {u.sizeSqm ?? '—'}
-                  </div>
-                </div>
-              ))}
-
-              {units.length === 0 && (
-                <div className="px-5 py-10 text-center text-sm text-zinc-400">
-                  No units yet.
-                </div>
-              )}
-            </div>
-          </section>
+          <BuildingUnitsPanel
+            apiBaseUrl={apiBaseUrl}
+            buildingId={building.id}
+            initialUnits={units}
+            onCountChange={setUnitCount}
+          />
         )}
       </div>
     </div>

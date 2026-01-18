@@ -29,6 +29,8 @@ type Unit = {
   floor: string | null;
   entrance: string | null;
   sizeSqm: number | null;
+  coOwnershipShare: string | null;
+  constructionYear: number | null;
   rooms: number | null;
   createdAt: string;
   updatedAt: string;
