@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Patch,
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { BuildingUnit } from '../kysely/database';
 import { CreateUnitDto } from './dto/create-unit.dto';
+import { ListUnitsQueryDto } from './dto/list-units.query.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
 import { UnitService } from './unit.service';
 
@@ -19,17 +21,13 @@ export class UnitController {
   constructor(private readonly unitService: UnitService) {}
 
   @Post()
-  async create(@Body() dto: CreateUnitDto): Promise<void> {
-    await this.unitService.create(dto);
+  async create(@Body() dto: CreateUnitDto): Promise<BuildingUnit> {
+    return await this.unitService.create(dto);
   }
 
   @Get()
-  async findAll(
-    @Query('buildingId') buildingId?: string,
-  ): Promise<BuildingUnit[]> {
-    return await this.unitService.findAll(
-      buildingId ? Number(buildingId) : undefined,
-    );
+  async findAll(@Query() query: ListUnitsQueryDto): Promise<BuildingUnit[]> {
+    return await this.unitService.findAll(query.buildingId);
   }
 
   @Get(':id')
@@ -41,11 +39,12 @@ export class UnitController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUnitDto,
-  ): Promise<void> {
-    await this.unitService.update(id, dto);
+  ): Promise<BuildingUnit> {
+    return await this.unitService.update(id, dto);
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.unitService.remove(id);
   }

@@ -1,4 +1,4 @@
-import { Kysely, sql } from 'kysely';
+import { Kysely, SqlBool, sql } from 'kysely';
 
 export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('buildingUnit').ifExists().execute();
@@ -113,9 +113,14 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('coOwnershipShare', 'text')
     .addColumn('constructionYear', 'integer')
     .addColumn('rooms', 'numeric')
-    .addUniqueConstraint('building_unit_building_id_number_unique', [
-      'buildingId',
-      'number',
-    ])
+    .execute();
+
+  // Allow re-creating a unit number after soft-delete by enforcing uniqueness only for active rows.
+  await db.schema
+    .createIndex('building_unit_building_id_number_unique_active')
+    .on('buildingUnit')
+    .expression(sql`"building_id", "number"`)
+    .where(sql<SqlBool>`"deleted_at" is null`)
+    .unique()
     .execute();
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Patch,
@@ -18,8 +19,8 @@ export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 
   @Post()
-  async create(@Body() dto: CreatePropertyDto): Promise<void> {
-    await this.propertyService.create(dto);
+  async create(@Body() dto: CreatePropertyDto): Promise<Property> {
+    return await this.propertyService.create(dto);
   }
 
   @Get()
@@ -36,11 +37,12 @@ export class PropertyController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePropertyDto,
-  ): Promise<void> {
-    await this.propertyService.update(id, dto);
+  ): Promise<Property> {
+    return await this.propertyService.update(id, dto);
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.propertyService.remove(id);
   }

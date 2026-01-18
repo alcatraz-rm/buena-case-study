@@ -8,8 +8,14 @@ import { UpdateUnitDto } from './dto/update-unit.dto';
 export class UnitService {
   constructor(private readonly kysely: KyselyService) {}
 
-  async create(dto: CreateUnitDto): Promise<void> {
-    await this.kysely.db.insertInto('buildingUnit').values(dto).execute();
+  async create(dto: CreateUnitDto): Promise<BuildingUnit> {
+    const created = await this.kysely.db
+      .insertInto('buildingUnit')
+      .values(dto)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return created;
   }
 
   async findAll(buildingId?: number): Promise<BuildingUnit[]> {
@@ -40,18 +46,20 @@ export class UnitService {
     return unit;
   }
 
-  async update(id: number, dto: UpdateUnitDto): Promise<void> {
+  async update(id: number, dto: UpdateUnitDto): Promise<BuildingUnit> {
     const result = await this.kysely.db
       .updateTable('buildingUnit')
       .set(dto)
       .where('id', '=', id)
       .where('deletedAt', 'is', null)
       .returningAll()
-      .execute();
+      .executeTakeFirst();
 
-    if (result.length === 0) {
+    if (!result) {
       throw new NotFoundException('Unit not found');
     }
+
+    return result;
   }
 
   async remove(id: number): Promise<void> {
@@ -61,9 +69,9 @@ export class UnitService {
       .where('id', '=', id)
       .where('deletedAt', 'is', null)
       .returningAll()
-      .execute();
+      .executeTakeFirst();
 
-    if (result.length === 0) {
+    if (!result) {
       throw new NotFoundException('Unit not found');
     }
   }

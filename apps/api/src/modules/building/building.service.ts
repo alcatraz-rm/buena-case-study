@@ -8,8 +8,14 @@ import { UpdateBuildingDto } from './dto/update-building.dto';
 export class BuildingService {
   constructor(private readonly kysely: KyselyService) {}
 
-  async create(dto: CreateBuildingDto): Promise<void> {
-    await this.kysely.db.insertInto('building').values(dto).execute();
+  async create(dto: CreateBuildingDto): Promise<Building> {
+    const created = await this.kysely.db
+      .insertInto('building')
+      .values(dto)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return created;
   }
 
   async findAll(propertyId?: number): Promise<Building[]> {
@@ -40,18 +46,20 @@ export class BuildingService {
     return building;
   }
 
-  async update(id: number, dto: UpdateBuildingDto): Promise<void> {
+  async update(id: number, dto: UpdateBuildingDto): Promise<Building> {
     const result = await this.kysely.db
       .updateTable('building')
       .set(dto)
       .where('id', '=', id)
       .where('deletedAt', 'is', null)
       .returningAll()
-      .execute();
+      .executeTakeFirst();
 
-    if (result.length === 0) {
+    if (!result) {
       throw new NotFoundException('Building not found');
     }
+
+    return result;
   }
 
   async remove(id: number): Promise<void> {
@@ -61,9 +69,9 @@ export class BuildingService {
       .where('id', '=', id)
       .where('deletedAt', 'is', null)
       .returningAll()
-      .execute();
+      .executeTakeFirst();
 
-    if (result.length === 0) {
+    if (!result) {
       throw new NotFoundException('Building not found');
     }
   }

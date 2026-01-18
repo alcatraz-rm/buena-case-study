@@ -1,16 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { TCreateUnitBase } from './base-unit.schema';
 
-export const TCreateUnit = z.object({
-  buildingId: z.number().int().positive(),
-  unitType: z.enum(['Apartment', 'Office', 'Garden', 'Parking']),
-  number: z.string(),
-  floor: z.string().nullable().optional(),
-  entrance: z.string().nullable().optional(),
-  sizeSqm: z.number().positive().nullable().optional(),
-  coOwnershipShare: z.string().nullable().optional(),
-  constructionYear: z.number().int().nullable().optional(),
-  rooms: z.number().positive().nullable().optional(),
-});
+export const TCreateUnit = z
+  .object({
+    buildingId: z.number().int().positive(),
+  })
+  .extend(TCreateUnitBase.shape);
 
 export class CreateUnitDto extends createZodDto(TCreateUnit) {}
