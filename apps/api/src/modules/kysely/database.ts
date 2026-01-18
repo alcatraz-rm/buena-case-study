@@ -17,8 +17,8 @@ export interface AccountantTable extends BaseTable {
 export interface PropertyTable extends BaseTable {
   name: string;
   managementType: ManagementType;
-  managerId: string;
-  accountantId: string;
+  managerId: number;
+  accountantId: number;
 
   // Teilungserklärung (declaration of division) upload metadata.
   declarationOfDivisionFileUrl: string | null;
@@ -33,12 +33,12 @@ export interface BuildingTable extends BaseTable {
   houseNumber: string;
   postalCode: string;
   city: string;
-  propertyId: string;
+  propertyId: number;
   country: string | null;
 }
 
 export interface BuildingUnitTable extends BaseTable {
-  buildingId: string;
+  buildingId: number;
   unitType: BuildingUnitType;
   number: string;
   floor: string | null;
@@ -58,7 +58,7 @@ export interface Database {
 }
 
 interface BaseTable {
-  id: Generated<string>;
+  id: Generated<number>;
   createdAt: Generated<Date>;
   updatedAt: Generated<Date>;
 }
