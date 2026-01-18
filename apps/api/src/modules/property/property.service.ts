@@ -13,7 +13,11 @@ export class PropertyService {
   }
 
   async findAll(): Promise<Property[]> {
-    return await this.kysely.db.selectFrom('property').selectAll().execute();
+    return await this.kysely.db
+      .selectFrom('property')
+      .selectAll()
+      .where('deletedAt', 'is', null)
+      .execute();
   }
 
   async findOne(id: number): Promise<Property> {
@@ -21,6 +25,7 @@ export class PropertyService {
       .selectFrom('property')
       .selectAll()
       .where('id', '=', id)
+      .where('deletedAt', 'is', null)
       .executeTakeFirst();
 
     if (!property) {
@@ -35,6 +40,7 @@ export class PropertyService {
       .updateTable('property')
       .set(dto)
       .where('id', '=', id)
+      .where('deletedAt', 'is', null)
       .returningAll()
       .execute();
 
@@ -45,8 +51,10 @@ export class PropertyService {
 
   async remove(id: number): Promise<void> {
     const result = await this.kysely.db
-      .deleteFrom('property')
+      .updateTable('property')
+      .set({ deletedAt: new Date() })
       .where('id', '=', id)
+      .where('deletedAt', 'is', null)
       .returningAll()
       .execute();
 

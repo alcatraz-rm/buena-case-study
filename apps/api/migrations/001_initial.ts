@@ -28,6 +28,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('email', 'text', (col) => col.notNull().unique())
     .execute();
@@ -41,6 +42,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('email', 'text', (col) => col.notNull().unique())
     .execute();
@@ -54,6 +56,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('managementType', sql`management_type`, (col) => col.notNull())
     .addColumn('managerId', 'integer', (col) =>
@@ -77,6 +80,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('street', 'text', (col) => col.notNull())
     .addColumn('houseNumber', 'text', (col) => col.notNull())
@@ -97,6 +101,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('buildingId', 'integer', (col) =>
       col.references('building.id').onDelete('cascade').notNull(),
     )

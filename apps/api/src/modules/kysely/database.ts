@@ -67,4 +67,5 @@ interface BaseTable {
   id: Generated<number>;
   createdAt: Generated<Date>;
   updatedAt: Generated<Date>;
+  deletedAt: Generated<Date | null>;
 }
