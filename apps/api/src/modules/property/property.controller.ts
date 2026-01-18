@@ -8,10 +8,10 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { Property } from '../kysely/database';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PropertyService } from './property.service';
-import { Property } from '../kysely/database';
 
 @Controller('properties')
 export class PropertyController {
@@ -28,9 +28,7 @@ export class PropertyController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Property | undefined> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Property> {
     return await this.propertyService.findOne(id);
   }
 

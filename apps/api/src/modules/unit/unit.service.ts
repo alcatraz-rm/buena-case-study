@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BuildingUnit } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -22,26 +22,42 @@ export class UnitService {
     return await query.execute();
   }
 
-  async findOne(id: number): Promise<BuildingUnit | undefined> {
-    return await this.kysely.db
+  async findOne(id: number): Promise<BuildingUnit> {
+    const unit = await this.kysely.db
       .selectFrom('buildingUnit')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
+
+    if (!unit) {
+      throw new NotFoundException('Unit not found');
+    }
+
+    return unit;
   }
 
   async update(id: number, dto: UpdateUnitDto): Promise<void> {
-    await this.kysely.db
+    const result = await this.kysely.db
       .updateTable('buildingUnit')
       .set(dto)
       .where('id', '=', id)
+      .returningAll()
       .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Unit not found');
+    }
   }
 
   async remove(id: number): Promise<void> {
-    await this.kysely.db
+    const result = await this.kysely.db
       .deleteFrom('buildingUnit')
       .where('id', '=', id)
+      .returningAll()
       .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Unit not found');
+    }
   }
 }

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Property } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
-import { Property } from '../kysely/database';
 
 @Injectable()
 export class PropertyService {
@@ -16,23 +16,42 @@ export class PropertyService {
     return await this.kysely.db.selectFrom('property').selectAll().execute();
   }
 
-  async findOne(id: number): Promise<Property | undefined> {
-    return await this.kysely.db
+  async findOne(id: number): Promise<Property> {
+    const property = await this.kysely.db
       .selectFrom('property')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return property;
   }
 
   async update(id: number, dto: UpdatePropertyDto): Promise<void> {
-    await this.kysely.db
+    const result = await this.kysely.db
       .updateTable('property')
       .set(dto)
       .where('id', '=', id)
+      .returningAll()
       .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
   }
 
   async remove(id: number): Promise<void> {
-    await this.kysely.db.deleteFrom('property').where('id', '=', id).execute();
+    const result = await this.kysely.db
+      .deleteFrom('property')
+      .where('id', '=', id)
+      .returningAll()
+      .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
   }
 }

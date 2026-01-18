@@ -33,9 +33,7 @@ export class UnitController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<BuildingUnit | undefined> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<BuildingUnit> {
     return await this.unitService.findOne(id);
   }
 

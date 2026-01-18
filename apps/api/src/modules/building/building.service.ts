@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Building } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
@@ -22,23 +22,42 @@ export class BuildingService {
     return await query.execute();
   }
 
-  async findOne(id: number): Promise<Building | undefined> {
-    return await this.kysely.db
+  async findOne(id: number): Promise<Building> {
+    const building = await this.kysely.db
       .selectFrom('building')
       .selectAll()
       .where('id', '=', id)
       .executeTakeFirst();
+
+    if (!building) {
+      throw new NotFoundException('Building not found');
+    }
+
+    return building;
   }
 
   async update(id: number, dto: UpdateBuildingDto): Promise<void> {
-    await this.kysely.db
+    const result = await this.kysely.db
       .updateTable('building')
       .set(dto)
       .where('id', '=', id)
+      .returningAll()
       .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Building not found');
+    }
   }
 
   async remove(id: number): Promise<void> {
-    await this.kysely.db.deleteFrom('building').where('id', '=', id).execute();
+    const result = await this.kysely.db
+      .deleteFrom('building')
+      .where('id', '=', id)
+      .returningAll()
+      .execute();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Building not found');
+    }
   }
 }
