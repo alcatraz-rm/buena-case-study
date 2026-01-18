@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Property } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
-import { CreatePropertyDto } from './dto/create-property.dto';
-import { UpdatePropertyDto } from './dto/update-property.dto';
+import type { CreatePropertyDto, UpdatePropertyDto } from './types';
 
 @Injectable()
 export class PropertyService {

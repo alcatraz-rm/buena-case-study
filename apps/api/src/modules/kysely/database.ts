@@ -36,7 +36,7 @@ export interface BuildingTable extends BaseTable {
   postalCode: string;
   city: string;
   propertyId: number;
-  country: string | null;
+  country: string;
 }
 
 export type Building = Selectable<BuildingTable>;

@@ -9,3 +9,6 @@ export const TCreateProperty = z.object({
 });
 
 export class CreatePropertyDto extends createZodDto(TCreateProperty) {}
+
+export const TUpdateProperty = TCreateProperty.partial();
+export class UpdatePropertyDto extends createZodDto(TUpdateProperty) {}

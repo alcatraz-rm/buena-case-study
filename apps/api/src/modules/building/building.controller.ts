@@ -1,7 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { Building } from '../kysely/database';
 import { BuildingService } from './building.service';
-import { ListBuildingsQueryDto } from './dto/list-buildings.query.dto';
+import { ListBuildingsQueryDto } from './types';
 
 @Controller('buildings')
 export class BuildingController {

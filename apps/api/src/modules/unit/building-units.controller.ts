@@ -10,8 +10,10 @@ import {
   Post,
 } from '@nestjs/common';
 import type { BuildingUnit } from '../kysely/database';
-import { CreateUnitUnderBuildingDto } from './dto/create-unit-under-building.dto';
-import { UpdateUnitUnderBuildingDto } from './dto/update-unit-under-building.dto';
+import {
+  CreateUnitUnderBuildingDto,
+  UpdateUnitUnderBuildingDto,
+} from './types';
 import { UnitService } from './unit.service';
 
 @Controller('buildings/:buildingId/units')
@@ -35,15 +37,19 @@ export class BuildingUnitsController {
 
   @Patch(':unitId')
   async update(
+    @Param('buildingId', ParseIntPipe) buildingId: number,
     @Param('unitId', ParseIntPipe) unitId: number,
     @Body() dto: UpdateUnitUnderBuildingDto,
   ): Promise<BuildingUnit> {
-    return await this.unitService.update(unitId, dto);
+    return await this.unitService.update(unitId, buildingId, dto);
   }
 
   @Delete(':unitId')
   @HttpCode(204)
-  async remove(@Param('unitId', ParseIntPipe) unitId: number): Promise<void> {
-    await this.unitService.remove(unitId);
+  async remove(
+    @Param('buildingId', ParseIntPipe) buildingId: number,
+    @Param('unitId', ParseIntPipe) unitId: number,
+  ): Promise<void> {
+    await this.unitService.remove(unitId, buildingId);
   }
 }

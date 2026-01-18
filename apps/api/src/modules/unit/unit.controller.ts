@@ -1,6 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { BuildingUnit } from '../kysely/database';
-import { ListUnitsQueryDto } from './dto/list-units.query.dto';
+import { ListUnitsQueryDto } from './types';
 import { UnitService } from './unit.service';
 
 @Controller('units')

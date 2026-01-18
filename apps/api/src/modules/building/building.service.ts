@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Building } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
-import { CreateBuildingDto } from './dto/create-building.dto';
-import { UpdateBuildingDto } from './dto/update-building.dto';
+import type {
+  CreateBuildingDto,
+  UpdateBuildingUnderPropertyDto,
+} from './types';
 
 @Injectable()
 export class BuildingService {
@@ -46,11 +48,16 @@ export class BuildingService {
     return building;
   }
 
-  async update(id: number, dto: UpdateBuildingDto): Promise<Building> {
+  async update(
+    id: number,
+    propertyId: number,
+    dto: UpdateBuildingUnderPropertyDto,
+  ): Promise<Building> {
     const result = await this.kysely.db
       .updateTable('building')
       .set(dto)
       .where('id', '=', id)
+      .where('propertyId', '=', propertyId)
       .where('deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
@@ -62,11 +69,12 @@ export class BuildingService {
     return result;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, propertyId: number): Promise<void> {
     const result = await this.kysely.db
       .updateTable('building')
       .set({ deletedAt: new Date() })
       .where('id', '=', id)
+      .where('propertyId', '=', propertyId)
       .where('deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();

@@ -86,7 +86,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('houseNumber', 'text', (col) => col.notNull())
     .addColumn('postalCode', 'text', (col) => col.notNull())
     .addColumn('city', 'text', (col) => col.notNull())
-    .addColumn('country', 'text')
+    .addColumn('country', 'text', (col) => col.notNull())
     .addColumn('propertyId', 'integer', (col) =>
       col.references('property.id').onDelete('cascade').notNull(),
     )

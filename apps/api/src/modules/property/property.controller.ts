@@ -10,9 +10,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { Property } from '../kysely/database';
-import { CreatePropertyDto } from './dto/create-property.dto';
-import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PropertyService } from './property.service';
+import { CreatePropertyDto, UpdatePropertyDto } from './types';
 
 @Controller('properties')
 export class PropertyController {
