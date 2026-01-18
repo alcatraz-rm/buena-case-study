@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { COUNTRY_OPTIONS } from '../lib/zippopotam/countries';
-import { lookupPostalCode } from '../lib/zippopotam/zippopotam';
+import { COUNTRY_OPTIONS } from '../lib/countries';
+import type { AddressSuggestion } from '../lib/geocode';
+import { suggestAddresses } from '../lib/geocode';
 
 type Building = {
   id: number;
@@ -41,109 +42,70 @@ export function PropertyBuildingsPanel({
     null,
   );
   const [createCountryCode, setCreateCountryCode] = useState('');
+  const [createStreet, setCreateStreet] = useState('');
+  const [createHouseNumber, setCreateHouseNumber] = useState('');
   const [createPostalCode, setCreatePostalCode] = useState('');
   const [createCity, setCreateCity] = useState('');
-  const [createCityTouched, setCreateCityTouched] = useState(false);
-  const [createPostalHint, setCreatePostalHint] = useState<string | null>(null);
+  const [createStreetSuggestions, setCreateStreetSuggestions] = useState<
+    AddressSuggestion[]
+  >([]);
+  const [isCreateSuggesting, setIsCreateSuggesting] = useState(false);
+  const [createSuggestAnchor, setCreateSuggestAnchor] = useState<
+    'street' | 'houseNumber'
+  >('street');
+  const [createSuppressSuggestions, setCreateSuppressSuggestions] =
+    useState(false);
+  const [createStreetFocused, setCreateStreetFocused] = useState(false);
+  const [createHouseNumberFocused, setCreateHouseNumberFocused] =
+    useState(false);
 
-  const [editBuilding, setEditBuilding] = useState<Building | null>(null);
-  const [isBuildingSaving, setIsBuildingSaving] = useState(false);
-  const [buildingError, setBuildingError] = useState<string | null>(null);
-  const [editCountryCode, setEditCountryCode] = useState<string>('');
-  const [editPostalCode, setEditPostalCode] = useState<string>('');
-  const [editCity, setEditCity] = useState<string>('');
-  const [editCityTouched, setEditCityTouched] = useState(false);
-  const [editPostalHint, setEditPostalHint] = useState<string | null>(null);
-  const isKnownEditCountryCode = COUNTRY_OPTIONS.some(
-    (c) => c.code === editCountryCode,
-  );
+  // Building editing happens on the extended building page.
 
   useEffect(() => {
     onCountChange?.(buildings.length);
   }, [buildings.length, onCountChange]);
 
-  useEffect(() => {
-    if (!editBuilding) return;
-    setEditCountryCode(editBuilding.country);
-    setEditPostalCode(editBuilding.postalCode);
-    setEditCity(editBuilding.city);
-    setEditCityTouched(false);
-    setEditPostalHint(null);
-  }, [editBuilding]);
+  // Building editing happens on the extended building page.
 
   useEffect(() => {
+    if (createSuppressSuggestions) return;
     if (!isCreateBuildingOpen) return;
-    if (!createCountryCode || !createPostalCode.trim()) {
-      setCreatePostalHint(null);
+    if (!createCountryCode || createStreet.trim().length < 3) {
+      setCreateStreetSuggestions([]);
+      setIsCreateSuggesting(false);
       return;
     }
 
     const controller = new AbortController();
+    setIsCreateSuggesting(true);
+
     const t = window.setTimeout(async () => {
-      try {
-        const res = await lookupPostalCode({
-          countryCode: createCountryCode,
-          postalCode: createPostalCode,
-          signal: controller.signal,
-        });
-
-        if (!res) {
-          setCreatePostalHint('No match found.');
-          return;
-        }
-
-        setCreatePostalHint(
-          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
-        );
-        if (!createCityTouched) setCreateCity(res.city);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setCreatePostalHint('Lookup failed.');
-      }
-    }, 450);
+      const q = `${createStreet}${createHouseNumber.trim() ? ` ${createHouseNumber.trim()}` : ''}`;
+      const suggestions = await suggestAddresses({
+        apiBaseUrl,
+        countryCode: createCountryCode,
+        q,
+        signal: controller.signal,
+      });
+      setCreateStreetSuggestions(suggestions);
+      setIsCreateSuggesting(false);
+    }, 300);
 
     return () => {
       controller.abort();
       window.clearTimeout(t);
+      setIsCreateSuggesting(false);
     };
-  }, [isCreateBuildingOpen, createCountryCode, createPostalCode, createCityTouched]);
+  }, [
+    apiBaseUrl,
+    isCreateBuildingOpen,
+    createCountryCode,
+    createStreet,
+    createHouseNumber,
+    createSuppressSuggestions,
+  ]);
 
-  useEffect(() => {
-    if (!editBuilding) return;
-    if (!editCountryCode || !editPostalCode.trim()) {
-      setEditPostalHint(null);
-      return;
-    }
-
-    const controller = new AbortController();
-    const t = window.setTimeout(async () => {
-      try {
-        const res = await lookupPostalCode({
-          countryCode: editCountryCode,
-          postalCode: editPostalCode,
-          signal: controller.signal,
-        });
-
-        if (!res) {
-          setEditPostalHint('No match found.');
-          return;
-        }
-
-        setEditPostalHint(
-          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
-        );
-        if (!editCityTouched) setEditCity(res.city);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setEditPostalHint('Lookup failed.');
-      }
-    }, 450);
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(t);
-    };
-  }, [editBuilding, editCountryCode, editPostalCode, editCityTouched]);
+  // Building editing happens on the extended building page.
 
   async function onCreateBuilding(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -191,54 +153,6 @@ export function PropertyBuildingsPanel({
     }
   }
 
-  async function onSaveBuilding(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!editBuilding) return;
-
-    setBuildingError(null);
-    setIsBuildingSaving(true);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-
-      const patch: Partial<
-        Pick<
-          Building,
-          'name' | 'street' | 'houseNumber' | 'postalCode' | 'city' | 'country'
-        >
-      > = {
-        name: String(formData.get('name') ?? '').trim(),
-        street: String(formData.get('street') ?? '').trim(),
-        houseNumber: String(formData.get('houseNumber') ?? '').trim(),
-        postalCode: String(formData.get('postalCode') ?? '').trim(),
-        city: String(formData.get('city') ?? '').trim(),
-        country: String(formData.get('country') ?? '').trim(),
-      };
-
-      const res = await fetch(
-        `${apiBaseUrl}/properties/${propertyId}/buildings/${editBuilding.id}`,
-        {
-          method: 'PATCH',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(patch),
-        },
-      );
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to save building (${res.status})`);
-      }
-
-      const updated = (await res.json()) as Building;
-      setBuildings((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
-      setEditBuilding(null);
-    } catch (err) {
-      setBuildingError(err instanceof Error ? err.message : 'Something went wrong.');
-    } finally {
-      setIsBuildingSaving(false);
-    }
-  }
-
   return (
     <>
       <section className="overflow-hidden rounded-xl border border-zinc-800">
@@ -255,10 +169,13 @@ export function PropertyBuildingsPanel({
             onClick={() => {
               setCreateBuildingError(null);
               setCreateCountryCode('');
+              setCreateStreet('');
+              setCreateHouseNumber('');
               setCreatePostalCode('');
               setCreateCity('');
-              setCreateCityTouched(false);
-              setCreatePostalHint(null);
+              setCreateStreetSuggestions([]);
+              setCreateSuggestAnchor('street');
+              setCreateSuppressSuggestions(false);
               setIsCreateBuildingOpen(true);
             }}
           >
@@ -290,10 +207,7 @@ export function PropertyBuildingsPanel({
                 <button
                   type="button"
                   className="h-9 rounded-lg border border-zinc-800 bg-transparent px-3 text-sm text-zinc-200 hover:bg-zinc-900"
-                  onClick={() => {
-                    setBuildingError(null);
-                    setEditBuilding(b);
-                  }}
+                  onClick={() => router.push(`/properties/${propertyId}/buildings/${b.id}`)}
                 >
                   Edit
                 </button>
@@ -373,31 +287,122 @@ export function PropertyBuildingsPanel({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-street">
                     Street
                   </label>
                   <input
                     id="c-street"
                     name="street"
+                    value={createStreet}
+                    onChange={(e) => {
+                      setCreateSuggestAnchor('street');
+                      setCreateSuppressSuggestions(false);
+                      setCreateStreet(e.target.value);
+                    }}
+                    onFocus={() => {
+                      setCreateSuggestAnchor('street');
+                      setCreateStreetFocused(true);
+                    }}
+                    onBlur={() => setCreateStreetFocused(false)}
                     disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. Sonnenallee"
                     required
                   />
+                  {createSuggestAnchor === 'street' &&
+                    createStreetFocused &&
+                    (isCreateSuggesting || createStreetSuggestions.length > 0) && (
+                    <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                      {isCreateSuggesting && (
+                        <div className="px-3 py-2 text-xs text-zinc-500">
+                          Searching…
+                        </div>
+                      )}
+                      {createStreetSuggestions.map((s) => (
+                        <button
+                          key={`${s.lat}-${s.lon}`}
+                          type="button"
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setCreateStreet(s.street);
+                            setCreateHouseNumber(s.houseNumber);
+                            setCreatePostalCode(s.postalCode);
+                            setCreateCity(s.city);
+                            setCreateStreetSuggestions([]);
+                            setCreateSuppressSuggestions(true);
+                          }}
+                        >
+                          <div className="truncate">{s.label}</div>
+                        </button>
+                      ))}
+                      {!isCreateSuggesting && createStreetSuggestions.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-zinc-500">
+                          No suggestions.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="grid gap-2">
+                <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-houseNumber">
                     House number
                   </label>
                   <input
                     id="c-houseNumber"
                     name="houseNumber"
+                    value={createHouseNumber}
+                    onChange={(e) => {
+                      setCreateSuggestAnchor('houseNumber');
+                      setCreateSuppressSuggestions(false);
+                      setCreateHouseNumber(e.target.value);
+                    }}
+                    onFocus={() => {
+                      setCreateSuggestAnchor('houseNumber');
+                      setCreateHouseNumberFocused(true);
+                    }}
+                    onBlur={() => setCreateHouseNumberFocused(false)}
                     disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 12"
                     required
                   />
+                  {createSuggestAnchor === 'houseNumber' &&
+                    createHouseNumberFocused &&
+                    (isCreateSuggesting || createStreetSuggestions.length > 0) && (
+                      <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                        {isCreateSuggesting && (
+                          <div className="px-3 py-2 text-xs text-zinc-500">
+                            Searching…
+                          </div>
+                        )}
+                        {createStreetSuggestions.map((s) => (
+                          <button
+                            key={`${s.lat}-${s.lon}`}
+                            type="button"
+                            className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setCreateStreet(s.street);
+                              setCreateHouseNumber(s.houseNumber);
+                              setCreatePostalCode(s.postalCode);
+                              setCreateCity(s.city);
+                              setCreateStreetSuggestions([]);
+                            setCreateSuppressSuggestions(true);
+                            }}
+                          >
+                            <div className="truncate">{s.label}</div>
+                          </button>
+                        ))}
+                        {!isCreateSuggesting &&
+                          createStreetSuggestions.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-zinc-500">
+                              No suggestions.
+                            </div>
+                          )}
+                      </div>
+                    )}
                 </div>
               </div>
 
@@ -416,9 +421,6 @@ export function PropertyBuildingsPanel({
                     placeholder="e.g. 12045"
                     required
                   />
-                  {createPostalHint && (
-                    <div className="text-xs text-zinc-500">{createPostalHint}</div>
-                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-city">
@@ -429,7 +431,6 @@ export function PropertyBuildingsPanel({
                     name="city"
                     value={createCity}
                     onChange={(e) => {
-                      setCreateCityTouched(true);
                       setCreateCity(e.target.value);
                     }}
                     disabled={!createCountryCode}
@@ -468,159 +469,7 @@ export function PropertyBuildingsPanel({
         </div>
       )}
 
-      {editBuilding && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
-          <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-zinc-900 px-5 py-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-base font-semibold">Edit building</h2>
-                <p className="text-xs text-zinc-400">Update building details.</p>
-              </div>
-
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
-                onClick={() => setEditBuilding(null)}
-              >
-                Close
-              </button>
-            </div>
-
-            <form onSubmit={onSaveBuilding} className="flex flex-col gap-4 px-5 py-4">
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="b-country">
-                  Country
-                </label>
-                <select
-                  id="b-country"
-                  name="country"
-                  value={editCountryCode}
-                  onChange={(e) => {
-                    setEditCountryCode(e.target.value);
-                  }}
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                  required
-                >
-                  <option value="" disabled>
-                    Select country…
-                  </option>
-                  {!isKnownEditCountryCode && editCountryCode && (
-                    <option value={editCountryCode}>{editCountryCode} (custom)</option>
-                  )}
-                  {COUNTRY_OPTIONS.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.name} ({c.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="b-name">
-                  Building name
-                </label>
-                <input
-                  id="b-name"
-                  name="name"
-                  defaultValue={editBuilding.name}
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="b-street">
-                    Street
-                  </label>
-                  <input
-                    id="b-street"
-                    name="street"
-                    defaultValue={editBuilding.street}
-                    disabled={!editCountryCode}
-                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="b-houseNumber">
-                    House number
-                  </label>
-                  <input
-                    id="b-houseNumber"
-                    name="houseNumber"
-                    defaultValue={editBuilding.houseNumber}
-                    disabled={!editCountryCode}
-                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="b-postalCode">
-                    Postal code
-                  </label>
-                  <input
-                    id="b-postalCode"
-                    name="postalCode"
-                    value={editPostalCode}
-                    onChange={(e) => setEditPostalCode(e.target.value)}
-                    disabled={!editCountryCode}
-                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                  />
-                  {editPostalHint && (
-                    <div className="text-xs text-zinc-500">{editPostalHint}</div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="b-city">
-                    City
-                  </label>
-                  <input
-                    id="b-city"
-                    name="city"
-                    value={editCity}
-                    onChange={(e) => {
-                      setEditCityTouched(true);
-                      setEditCity(e.target.value);
-                    }}
-                    disabled={!editCountryCode}
-                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                  />
-                </div>
-              </div>
-
-              {buildingError && (
-                <div className="rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2 text-sm text-red-200">
-                  {buildingError}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
-                  onClick={() => setEditBuilding(null)}
-                  disabled={isBuildingSaving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
-                  disabled={isBuildingSaving}
-                >
-                  {isBuildingSaving ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Building editing happens on the extended building page. */}
     </>
   );
 }

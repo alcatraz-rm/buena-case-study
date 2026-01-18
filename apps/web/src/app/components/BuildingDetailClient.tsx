@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { COUNTRY_OPTIONS } from '../lib/zippopotam/countries';
-import { lookupPostalCode } from '../lib/zippopotam/zippopotam';
+import { COUNTRY_OPTIONS } from '../lib/countries';
+import { suggestAddresses } from '../lib/geocode';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BuildingUnitsPanel } from './BuildingUnitsPanel';
 
@@ -65,10 +65,20 @@ export function BuildingDetailClient({
   const [isDirty, setIsDirty] = useState(false);
 
   const [countryCode, setCountryCode] = useState<string>(initialBuilding.country);
+  const [street, setStreet] = useState<string>(initialBuilding.street);
+  const [houseNumber, setHouseNumber] = useState<string>(initialBuilding.houseNumber);
   const [postalCode, setPostalCode] = useState<string>(initialBuilding.postalCode);
   const [city, setCity] = useState<string>(initialBuilding.city);
-  const [cityTouched, setCityTouched] = useState(false);
-  const [postalLookupHint, setPostalLookupHint] = useState<string | null>(null);
+  const [streetSuggestions, setStreetSuggestions] = useState<
+    { label: string; street: string; houseNumber: string; postalCode: string; city: string; lat: string; lon: string; countryCode: string }[]
+  >([]);
+  const [isStreetSuggesting, setIsStreetSuggesting] = useState(false);
+  const [suggestAnchor, setSuggestAnchor] = useState<'street' | 'houseNumber'>(
+    'street',
+  );
+  const [suppressSuggestions, setSuppressSuggestions] = useState(false);
+  const [streetFocused, setStreetFocused] = useState(false);
+  const [houseNumberFocused, setHouseNumberFocused] = useState(false);
   const isKnownCountryCode = COUNTRY_OPTIONS.some((c) => c.code === countryCode);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -90,40 +100,38 @@ export function BuildingDetailClient({
   }, [isDirty]);
 
   useEffect(() => {
-    if (!countryCode || !postalCode.trim()) {
-      setPostalLookupHint(null);
+    if (suppressSuggestions) return;
+    if (!countryCode || street.trim().length < 3) {
+      setStreetSuggestions([]);
+      setIsStreetSuggesting(false);
       return;
     }
 
     const controller = new AbortController();
+    setIsStreetSuggesting(true);
+
     const t = window.setTimeout(async () => {
-      try {
-        const res = await lookupPostalCode({
-          countryCode,
-          postalCode,
-          signal: controller.signal,
-        });
-
-        if (!res) {
-          setPostalLookupHint('No match found.');
-          return;
-        }
-
-        setPostalLookupHint(
-          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
-        );
-        if (!cityTouched) setCity(res.city);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        setPostalLookupHint('Lookup failed.');
-      }
-    }, 450);
+      const q = `${street}${houseNumber.trim() ? ` ${houseNumber.trim()}` : ''}`;
+      const suggestions = await suggestAddresses({
+        apiBaseUrl,
+        countryCode,
+        q,
+        signal: controller.signal,
+      });
+      setStreetSuggestions(suggestions);
+      setIsStreetSuggesting(false);
+    }, 300);
 
     return () => {
       controller.abort();
       window.clearTimeout(t);
+      setIsStreetSuggesting(false);
     };
-  }, [countryCode, postalCode, cityTouched]);
+  }, [apiBaseUrl, countryCode, street, houseNumber, suppressSuggestions]);
+
+  useEffect(() => {
+    // Postal code lookup removed (Zippopotam removed).
+  }, []);
 
   function confirmNavigate(): boolean {
     if (!isDirty) return true;
@@ -169,9 +177,10 @@ export function BuildingDetailClient({
       const updated = (await res.json()) as Building;
       setBuilding(updated);
       setCountryCode(updated.country);
+      setStreet(updated.street);
+      setHouseNumber(updated.houseNumber);
       setPostalCode(updated.postalCode);
       setCity(updated.city);
-      setCityTouched(false);
       setSaveOk('Saved.');
       setIsDirty(false);
       router.refresh();
@@ -339,34 +348,124 @@ export function BuildingDetailClient({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="street">
                     Street
                   </label>
                   <input
                     id="street"
                     name="street"
-                    defaultValue={building.street}
-                    onChange={() => setIsDirty(true)}
+                    value={street}
+                    onChange={(e) => {
+                      setSuggestAnchor('street');
+                      setSuppressSuggestions(false);
+                      setStreet(e.target.value);
+                      setIsDirty(true);
+                    }}
+                    onFocus={() => {
+                      setSuggestAnchor('street');
+                      setStreetFocused(true);
+                    }}
+                    onBlur={() => setStreetFocused(false)}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     disabled={!countryCode}
                     required
                   />
+                  {suggestAnchor === 'street' &&
+                    streetFocused &&
+                    (isStreetSuggesting || streetSuggestions.length > 0) && (
+                    <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                      {isStreetSuggesting && (
+                        <div className="px-3 py-2 text-xs text-zinc-500">
+                          Searching…
+                        </div>
+                      )}
+                      {streetSuggestions.map((s) => (
+                        <button
+                          key={`${s.lat}-${s.lon}`}
+                          type="button"
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setStreet(s.street);
+                            setHouseNumber(s.houseNumber);
+                            setPostalCode(s.postalCode);
+                            setCity(s.city);
+                            setStreetSuggestions([]);
+                            setSuppressSuggestions(true);
+                            setIsDirty(true);
+                          }}
+                        >
+                          <div className="truncate">{s.label}</div>
+                        </button>
+                      ))}
+                      {!isStreetSuggesting && streetSuggestions.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-zinc-500">
+                          No suggestions.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid gap-2">
+                <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="houseNumber">
                     House number
                   </label>
                   <input
                     id="houseNumber"
                     name="houseNumber"
-                    defaultValue={building.houseNumber}
-                    onChange={() => setIsDirty(true)}
+                    value={houseNumber}
+                    onChange={(e) => {
+                      setSuggestAnchor('houseNumber');
+                      setSuppressSuggestions(false);
+                      setHouseNumber(e.target.value);
+                      setIsDirty(true);
+                    }}
+                    onFocus={() => {
+                      setSuggestAnchor('houseNumber');
+                      setHouseNumberFocused(true);
+                    }}
+                    onBlur={() => setHouseNumberFocused(false)}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     disabled={!countryCode}
                     required
                   />
+                  {suggestAnchor === 'houseNumber' &&
+                    houseNumberFocused &&
+                    (isStreetSuggesting || streetSuggestions.length > 0) && (
+                      <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                        {isStreetSuggesting && (
+                          <div className="px-3 py-2 text-xs text-zinc-500">
+                            Searching…
+                          </div>
+                        )}
+                        {streetSuggestions.map((s) => (
+                          <button
+                            key={`${s.lat}-${s.lon}`}
+                            type="button"
+                            className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setStreet(s.street);
+                              setHouseNumber(s.houseNumber);
+                              setPostalCode(s.postalCode);
+                              setCity(s.city);
+                              setStreetSuggestions([]);
+                            setSuppressSuggestions(true);
+                              setIsDirty(true);
+                            }}
+                          >
+                            <div className="truncate">{s.label}</div>
+                          </button>
+                        ))}
+                        {!isStreetSuggesting && streetSuggestions.length === 0 && (
+                          <div className="px-3 py-2 text-xs text-zinc-500">
+                            No suggestions.
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
               </div>
 
@@ -387,9 +486,6 @@ export function BuildingDetailClient({
                     disabled={!countryCode}
                     required
                   />
-                  {postalLookupHint && (
-                    <div className="text-xs text-zinc-500">{postalLookupHint}</div>
-                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -401,7 +497,6 @@ export function BuildingDetailClient({
                     name="city"
                     value={city}
                     onChange={(e) => {
-                      setCityTouched(true);
                       setCity(e.target.value);
                       setIsDirty(true);
                     }}
