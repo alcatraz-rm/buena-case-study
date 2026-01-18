@@ -32,3 +32,16 @@ export type UpdateBuildingUnderPropertyDto = z.infer<
 >;
 export type ListBuildingsQueryDto = z.infer<typeof TListBuildingsQuery>;
 
+// API response shapes (JSON-serialized)
+export type Building = {
+  id: number;
+  propertyId: number;
+  name: string;
+  street: string;
+  houseNumber: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  createdAt: string;
+  updatedAt: string;
+};

@@ -1,40 +1,16 @@
 'use client';
 
+import type {
+  Building,
+  ManagementType,
+  PersonOption,
+  Property,
+  UpdatePropertyDto,
+} from '@buena/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { PropertyBuildingsPanel } from './PropertyBuildingsPanel';
-
-type ManagementType = 'WEG' | 'MV';
-
-type PersonOption = {
-  id: number;
-  name: string;
-  email: string;
-};
-
-type Property = {
-  id: number;
-  name: string;
-  managementType: ManagementType;
-  managerId: number;
-  accountantId: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Building = {
-  id: number;
-  propertyId: number;
-  name: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 type Props = {
   apiBaseUrl: string;
@@ -118,7 +94,12 @@ export function PropertyDetailClient({
       const res = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, managementType, managerId, accountantId }),
+        body: JSON.stringify({
+          name,
+          managementType,
+          managerId,
+          accountantId,
+        } satisfies UpdatePropertyDto),
       });
 
       if (!res.ok) {

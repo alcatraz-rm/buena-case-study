@@ -1,23 +1,7 @@
+import type { PersonOption, PropertyListItem } from '@buena/shared';
 import { PropertiesPageClient } from './components/PropertiesPageClient';
 
-type Property = {
-  id: number;
-  name: string;
-  managementType: 'WEG' | 'MV';
-  managerId: number;
-  accountantId: number;
-  buildingCount: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type PersonOption = {
-  id: number;
-  name: string;
-  email: string;
-};
-
-async function getProperties(): Promise<Property[]> {
+async function getProperties(): Promise<PropertyListItem[]> {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
   const res = await fetch(`${baseUrl}/properties`, { cache: 'no-store' });
@@ -26,7 +10,7 @@ async function getProperties(): Promise<Property[]> {
     throw new Error(`Failed to load properties (${res.status})`);
   }
 
-  return (await res.json()) as Property[];
+  return (await res.json()) as PropertyListItem[];
 }
 
 async function getManagers(): Promise<PersonOption[]> {

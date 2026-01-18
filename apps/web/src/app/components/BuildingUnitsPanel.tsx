@@ -1,29 +1,14 @@
 'use client';
 
+import type { BuildingUnitType, Unit } from '@buena/shared';
 import { useEffect, useState } from 'react';
-
-type BuildingUnitType = 'Apartment' | 'Office' | 'Garden' | 'Parking';
-
-type Unit = {
-  id: number;
-  buildingId: number;
-  unitType: BuildingUnitType;
-  number: string;
-  floor: string | null;
-  entrance: string | null;
-  sizeSqm: number | null;
-  coOwnershipShare: string | null;
-  constructionYear: number | null;
-  rooms: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 type Props = {
   apiBaseUrl: string;
   buildingId: number;
   initialUnits: Unit[];
   onCountChange?: (count: number) => void;
+  onUnitsChange?: (units: Unit[]) => void;
 };
 
 export function BuildingUnitsPanel({
@@ -31,6 +16,7 @@ export function BuildingUnitsPanel({
   buildingId,
   initialUnits,
   onCountChange,
+  onUnitsChange,
 }: Props) {
   const [units, setUnits] = useState<Unit[]>(initialUnits);
 
@@ -48,6 +34,10 @@ export function BuildingUnitsPanel({
   useEffect(() => {
     onCountChange?.(units.length);
   }, [units.length, onCountChange]);
+
+  useEffect(() => {
+    onUnitsChange?.(units);
+  }, [units, onUnitsChange]);
 
   async function onCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

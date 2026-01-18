@@ -1,24 +1,11 @@
 'use client';
 
+import type { AddressSuggestion, Building } from '@buena/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
 import { suggestAddresses } from '../lib/geocode';
-import { AddressSuggestion } from '@buena/shared';
-
-type Building = {
-  id: number;
-  propertyId: number;
-  name: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 type Props = {
   apiBaseUrl: string;

@@ -1,46 +1,12 @@
 'use client';
 
+import type { AddressSuggestion, Building, Property, Unit } from '@buena/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
 import { suggestAddresses } from '../lib/geocode';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BuildingUnitsPanel } from './BuildingUnitsPanel';
-
-type Building = {
-  id: number;
-  propertyId: number;
-  name: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Property = {
-  id: number;
-  name: string;
-};
-
-type BuildingUnitType = 'Apartment' | 'Office' | 'Garden' | 'Parking';
-
-type Unit = {
-  id: number;
-  buildingId: number;
-  unitType: BuildingUnitType;
-  number: string;
-  floor: string | null;
-  entrance: string | null;
-  sizeSqm: number | null;
-  coOwnershipShare: string | null;
-  constructionYear: number | null;
-  rooms: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 type Tab = 'details' | 'units';
 
@@ -61,6 +27,7 @@ export function BuildingDetailClient({
   const [tab, setTab] = useState<Tab>('details');
 
   const [building, setBuilding] = useState<Building>(initialBuilding);
+  const [unitsState, setUnitsState] = useState<Unit[]>(units);
   const [unitCount, setUnitCount] = useState<number>(units.length);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -70,7 +37,7 @@ export function BuildingDetailClient({
   const [postalCode, setPostalCode] = useState<string>(initialBuilding.postalCode);
   const [city, setCity] = useState<string>(initialBuilding.city);
   const [streetSuggestions, setStreetSuggestions] = useState<
-    { label: string; street: string; houseNumber: string; postalCode: string; city: string; lat: string; lon: string; countryCode: string }[]
+    AddressSuggestion[]
   >([]);
   const [isStreetSuggesting, setIsStreetSuggesting] = useState(false);
   const [suggestAnchor, setSuggestAnchor] = useState<'street' | 'houseNumber'>(
@@ -537,8 +504,9 @@ export function BuildingDetailClient({
           <BuildingUnitsPanel
             apiBaseUrl={apiBaseUrl}
             buildingId={building.id}
-            initialUnits={units}
+            initialUnits={unitsState}
             onCountChange={setUnitCount}
+            onUnitsChange={setUnitsState}
           />
         )}
       </div>

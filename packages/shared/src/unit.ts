@@ -7,6 +7,7 @@ export const BuildingUnitTypeSchema = z.enum([
   'Garden',
   'Parking',
 ]);
+export type BuildingUnitType = z.infer<typeof BuildingUnitTypeSchema>;
 
 export const TCreateUnitBase = z.object({
   unitType: BuildingUnitTypeSchema,
@@ -37,3 +38,18 @@ export type CreateUnitUnderBuildingDto = z.infer<typeof TCreateUnitUnderBuilding
 export type UpdateUnitUnderBuildingDto = z.infer<typeof TUpdateUnitUnderBuilding>;
 export type ListUnitsQueryDto = z.infer<typeof TListUnitsQuery>;
 
+// API response shapes (JSON-serialized)
+export type Unit = {
+  id: number;
+  buildingId: number;
+  unitType: BuildingUnitType;
+  number: string;
+  floor: string | null;
+  entrance: string | null;
+  sizeSqm: number | null;
+  coOwnershipShare: string | null;
+  constructionYear: number | null;
+  rooms: number | null;
+  createdAt: string;
+  updatedAt: string;
+};

@@ -1,40 +1,6 @@
+import type { Building, Property, Unit } from '@buena/shared';
 import { notFound } from 'next/navigation';
 import { BuildingDetailClient } from '../../../../components/BuildingDetailClient';
-
-type Property = {
-  id: number;
-  name: string;
-};
-
-type Building = {
-  id: number;
-  propertyId: number;
-  name: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type BuildingUnitType = 'Apartment' | 'Office' | 'Garden' | 'Parking';
-
-type Unit = {
-  id: number;
-  buildingId: number;
-  unitType: BuildingUnitType;
-  number: string;
-  floor: string | null;
-  entrance: string | null;
-  sizeSqm: number | null;
-  coOwnershipShare: string | null;
-  constructionYear: number | null;
-  rooms: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });

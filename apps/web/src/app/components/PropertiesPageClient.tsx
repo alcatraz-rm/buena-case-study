@@ -1,25 +1,15 @@
 'use client';
 
+import type { CreatePropertyDto, ManagementType, PersonOption, Property, PropertyListItem } from '@buena/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-type Property = {
-  id: number;
-  name: string;
-  managementType: 'WEG' | 'MV';
-  managerId: number;
-  accountantId: number;
-  buildingCount: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
 type Props = {
-  properties: Property[];
+  properties: PropertyListItem[];
   apiBaseUrl: string;
-  managers: { id: number; name: string; email: string }[];
-  accountants: { id: number; name: string; email: string }[];
+  managers: PersonOption[];
+  accountants: PersonOption[];
 };
 
 export function PropertiesPageClient({
@@ -54,9 +44,9 @@ export function PropertiesPageClient({
       const formData = new FormData(e.currentTarget);
 
       const name = String(formData.get('name') ?? '').trim();
-      const managementType = String(formData.get('managementType') ?? 'WEG') as
-        | 'WEG'
-        | 'MV';
+      const managementType = String(
+        formData.get('managementType') ?? 'WEG',
+      ) as ManagementType;
       const managerId = Number(formData.get('managerId'));
       const accountantId = Number(formData.get('accountantId'));
 
@@ -68,7 +58,12 @@ export function PropertiesPageClient({
       const res = await fetch(`${apiBaseUrl}/properties`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, managementType, managerId, accountantId }),
+        body: JSON.stringify({
+          name,
+          managementType,
+          managerId,
+          accountantId,
+        } satisfies CreatePropertyDto),
       });
 
       if (!res.ok) {
