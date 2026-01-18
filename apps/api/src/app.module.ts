@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { BuildingModule } from './modules/building/building.module';
 import { KyselyModule } from './modules/kysely/kysely.module';
+import { PropertyModule } from './modules/property/property.module';
+import { UnitModule } from './modules/unit/unit.module';
 
 @Module({
   imports: [
@@ -9,8 +14,16 @@ import { KyselyModule } from './modules/kysely/kysely.module';
       // validate: validateEnv,
     }),
     KyselyModule,
+    PropertyModule,
+    BuildingModule,
+    UnitModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}
