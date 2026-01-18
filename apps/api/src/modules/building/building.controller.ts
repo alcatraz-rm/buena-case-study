@@ -7,11 +7,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import { Building } from '../kysely/database';
 import { BuildingService } from './building.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
-import { Building } from '../kysely/database';
 
 @Controller('buildings')
 export class BuildingController {
@@ -23,8 +24,10 @@ export class BuildingController {
   }
 
   @Get()
-  async findAll(): Promise<Building[]> {
-    return await this.buildingService.findAll();
+  async findAll(@Query('propertyId') propertyId?: string): Promise<Building[]> {
+    return await this.buildingService.findAll(
+      propertyId ? Number(propertyId) : undefined,
+    );
   }
 
   @Get(':id')

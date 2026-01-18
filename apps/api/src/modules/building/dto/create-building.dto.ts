@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-export const TCreateBuidling = z.object({
+export const TCreateBuilding = z.object({
   propertyId: z.number().int().positive(),
   name: z.string(),
   street: z.string(),
@@ -11,4 +11,4 @@ export const TCreateBuidling = z.object({
   country: z.string(),
 });
 
-export class CreateBuildingDto extends createZodDto(TCreateBuidling) {}
+export class CreateBuildingDto extends createZodDto(TCreateBuilding) {}

@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
-import { TCreateBuidling } from './create-building.dto';
+import { TCreateBuilding } from './create-building.dto';
 
-export const TUpdateBuidling = TCreateBuidling.partial();
+export const TUpdateBuilding = TCreateBuilding.partial();
 
-export class UpdateBuildingDto extends createZodDto(TUpdateBuidling) {}
+export class UpdateBuildingDto extends createZodDto(TUpdateBuilding) {}
