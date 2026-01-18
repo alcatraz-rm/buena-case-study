@@ -16,5 +16,13 @@
     "**/*.svg",
     "**/*.md"
   ],
-  "words": ["logomark", "buena", "kysely", "Teilungserklärung", "timestamptz"]
+  "words": [
+    "logomark",
+    "buena",
+    "kysely",
+    "Teilungserklärung",
+    "timestamptz",
+    "Sheeran",
+    "Keanu"
+  ]
 }

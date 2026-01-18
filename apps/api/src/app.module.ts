@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { BuildingModule } from './modules/building/building.module';
+import { KyselyModule } from './modules/kysely/kysely.module';
+import { PropertyModule } from './modules/property/property.module';
+import { UnitModule } from './modules/unit/unit.module';
 
 @Module({
   imports: [
@@ -9,8 +13,17 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: ['.env.local', '.env'],
       // validate: validateEnv,
     }),
+    KyselyModule,
+    PropertyModule,
+    BuildingModule,
+    UnitModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}

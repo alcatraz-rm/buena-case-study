@@ -9,6 +9,7 @@
     "build": "nest build",
     "dev": "pnpm run start:dev",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "kysely": "kysely --experimental-resolve-tsconfig-paths --config=./.config/kysely.config.ts --cwd=.",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -25,9 +26,11 @@
     "kysely": "^0.28.10",
     "kysely-ctl": "^0.20.0",
     "kysely-postgres-js": "^3.0.0",
+    "nestjs-zod": "^5.1.1",
     "postgres": "^3.4.8",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

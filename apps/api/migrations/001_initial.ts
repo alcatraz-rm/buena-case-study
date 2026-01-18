@@ -1,4 +1,4 @@
-import { Kysely, sql } from 'kysely';
+import { Kysely, SqlBool, sql } from 'kysely';
 
 export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('buildingUnit').ifExists().execute();
@@ -28,6 +28,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('email', 'text', (col) => col.notNull().unique())
     .execute();
@@ -41,6 +42,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('email', 'text', (col) => col.notNull().unique())
     .execute();
@@ -54,6 +56,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('managementType', sql`management_type`, (col) => col.notNull())
     .addColumn('managerId', 'integer', (col) =>
@@ -77,12 +80,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('name', 'text', (col) => col.notNull())
     .addColumn('street', 'text', (col) => col.notNull())
     .addColumn('houseNumber', 'text', (col) => col.notNull())
     .addColumn('postalCode', 'text', (col) => col.notNull())
     .addColumn('city', 'text', (col) => col.notNull())
-    .addColumn('country', 'text')
+    .addColumn('country', 'text', (col) => col.notNull())
     .addColumn('propertyId', 'integer', (col) =>
       col.references('property.id').onDelete('cascade').notNull(),
     )
@@ -97,6 +101,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('updatedAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
+    .addColumn('deletedAt', 'timestamptz')
     .addColumn('buildingId', 'integer', (col) =>
       col.references('building.id').onDelete('cascade').notNull(),
     )
@@ -108,9 +113,13 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('coOwnershipShare', 'text')
     .addColumn('constructionYear', 'integer')
     .addColumn('rooms', 'numeric')
-    .addUniqueConstraint('building_unit_building_id_number_unique', [
-      'buildingId',
-      'number',
-    ])
+    .execute();
+
+  await db.schema
+    .createIndex('building_unit_building_id_number_unique_active')
+    .on('buildingUnit')
+    .expression(sql`"building_id", "number"`)
+    .where(sql<SqlBool>`"deleted_at" is null`)
+    .unique()
     .execute();
 }
