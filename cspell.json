@@ -16,5 +16,5 @@
     "**/*.svg",
     "**/*.md"
   ],
-  "words": ["logomark", "buena"]
+  "words": ["logomark", "buena", "kysely", "Teilungserklärung", "timestamptz"]
 }
