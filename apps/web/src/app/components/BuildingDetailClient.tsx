@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { COUNTRY_OPTIONS } from '../lib/zippopotam/countries';
+import { lookupPostalCode } from '../lib/zippopotam/zippopotam';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BuildingUnitsPanel } from './BuildingUnitsPanel';
 
@@ -62,6 +64,13 @@ export function BuildingDetailClient({
   const [unitCount, setUnitCount] = useState<number>(units.length);
   const [isDirty, setIsDirty] = useState(false);
 
+  const [countryCode, setCountryCode] = useState<string>(initialBuilding.country);
+  const [postalCode, setPostalCode] = useState<string>(initialBuilding.postalCode);
+  const [city, setCity] = useState<string>(initialBuilding.city);
+  const [cityTouched, setCityTouched] = useState(false);
+  const [postalLookupHint, setPostalLookupHint] = useState<string | null>(null);
+  const isKnownCountryCode = COUNTRY_OPTIONS.some((c) => c.code === countryCode);
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveOk, setSaveOk] = useState<string | null>(null);
@@ -79,6 +88,42 @@ export function BuildingDetailClient({
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, [isDirty]);
+
+  useEffect(() => {
+    if (!countryCode || !postalCode.trim()) {
+      setPostalLookupHint(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const t = window.setTimeout(async () => {
+      try {
+        const res = await lookupPostalCode({
+          countryCode,
+          postalCode,
+          signal: controller.signal,
+        });
+
+        if (!res) {
+          setPostalLookupHint('No match found.');
+          return;
+        }
+
+        setPostalLookupHint(
+          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
+        );
+        if (!cityTouched) setCity(res.city);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setPostalLookupHint('Lookup failed.');
+      }
+    }, 450);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(t);
+    };
+  }, [countryCode, postalCode, cityTouched]);
 
   function confirmNavigate(): boolean {
     if (!isDirty) return true;
@@ -123,6 +168,10 @@ export function BuildingDetailClient({
 
       const updated = (await res.json()) as Building;
       setBuilding(updated);
+      setCountryCode(updated.country);
+      setPostalCode(updated.postalCode);
+      setCity(updated.city);
+      setCityTouched(false);
       setSaveOk('Saved.');
       setIsDirty(false);
       router.refresh();
@@ -247,6 +296,35 @@ export function BuildingDetailClient({
 
             <form onSubmit={onSave} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2">
+                <label className="text-sm text-zinc-300" htmlFor="country">
+                  Country
+                </label>
+                <select
+                  id="country"
+                  name="country"
+                  value={countryCode}
+                  onChange={(e) => {
+                    setCountryCode(e.target.value);
+                    setIsDirty(true);
+                  }}
+                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                  required
+                >
+                  <option value="" disabled>
+                    Select country…
+                  </option>
+                  {!isKnownCountryCode && countryCode && (
+                    <option value={countryCode}>{countryCode} (custom)</option>
+                  )}
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="name">
                   Building name
                 </label>
@@ -271,6 +349,7 @@ export function BuildingDetailClient({
                     defaultValue={building.street}
                     onChange={() => setIsDirty(true)}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    disabled={!countryCode}
                     required
                   />
                 </div>
@@ -285,53 +364,52 @@ export function BuildingDetailClient({
                     defaultValue={building.houseNumber}
                     onChange={() => setIsDirty(true)}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    disabled={!countryCode}
                     required
                   />
                 </div>
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="postalCode">
                     Postal code
                   </label>
                   <input
                     id="postalCode"
                     name="postalCode"
-                    defaultValue={building.postalCode}
-                    onChange={() => setIsDirty(true)}
+                    value={postalCode}
+                    onChange={(e) => {
+                      setPostalCode(e.target.value);
+                      setIsDirty(true);
+                    }}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    disabled={!countryCode}
                     required
                   />
+                  {postalLookupHint && (
+                    <div className="text-xs text-zinc-500">{postalLookupHint}</div>
+                  )}
                 </div>
 
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="city">
                     City
                   </label>
                   <input
                     id="city"
                     name="city"
-                    defaultValue={building.city}
-                    onChange={() => setIsDirty(true)}
+                    value={city}
+                    onChange={(e) => {
+                      setCityTouched(true);
+                      setCity(e.target.value);
+                      setIsDirty(true);
+                    }}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    disabled={!countryCode}
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="country">
-                  Country
-                </label>
-                <input
-                  id="country"
-                  name="country"
-                  defaultValue={building.country}
-                  onChange={() => setIsDirty(true)}
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                  required
-                />
               </div>
 
               {(saveError || saveOk) && (

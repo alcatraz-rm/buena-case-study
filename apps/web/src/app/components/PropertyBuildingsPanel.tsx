@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { COUNTRY_OPTIONS } from '../lib/zippopotam/countries';
+import { lookupPostalCode } from '../lib/zippopotam/zippopotam';
 
 type Building = {
   id: number;
@@ -38,14 +40,110 @@ export function PropertyBuildingsPanel({
   const [createBuildingError, setCreateBuildingError] = useState<string | null>(
     null,
   );
+  const [createCountryCode, setCreateCountryCode] = useState('');
+  const [createPostalCode, setCreatePostalCode] = useState('');
+  const [createCity, setCreateCity] = useState('');
+  const [createCityTouched, setCreateCityTouched] = useState(false);
+  const [createPostalHint, setCreatePostalHint] = useState<string | null>(null);
 
   const [editBuilding, setEditBuilding] = useState<Building | null>(null);
   const [isBuildingSaving, setIsBuildingSaving] = useState(false);
   const [buildingError, setBuildingError] = useState<string | null>(null);
+  const [editCountryCode, setEditCountryCode] = useState<string>('');
+  const [editPostalCode, setEditPostalCode] = useState<string>('');
+  const [editCity, setEditCity] = useState<string>('');
+  const [editCityTouched, setEditCityTouched] = useState(false);
+  const [editPostalHint, setEditPostalHint] = useState<string | null>(null);
+  const isKnownEditCountryCode = COUNTRY_OPTIONS.some(
+    (c) => c.code === editCountryCode,
+  );
 
   useEffect(() => {
     onCountChange?.(buildings.length);
   }, [buildings.length, onCountChange]);
+
+  useEffect(() => {
+    if (!editBuilding) return;
+    setEditCountryCode(editBuilding.country);
+    setEditPostalCode(editBuilding.postalCode);
+    setEditCity(editBuilding.city);
+    setEditCityTouched(false);
+    setEditPostalHint(null);
+  }, [editBuilding]);
+
+  useEffect(() => {
+    if (!isCreateBuildingOpen) return;
+    if (!createCountryCode || !createPostalCode.trim()) {
+      setCreatePostalHint(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const t = window.setTimeout(async () => {
+      try {
+        const res = await lookupPostalCode({
+          countryCode: createCountryCode,
+          postalCode: createPostalCode,
+          signal: controller.signal,
+        });
+
+        if (!res) {
+          setCreatePostalHint('No match found.');
+          return;
+        }
+
+        setCreatePostalHint(
+          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
+        );
+        if (!createCityTouched) setCreateCity(res.city);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setCreatePostalHint('Lookup failed.');
+      }
+    }, 450);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(t);
+    };
+  }, [isCreateBuildingOpen, createCountryCode, createPostalCode, createCityTouched]);
+
+  useEffect(() => {
+    if (!editBuilding) return;
+    if (!editCountryCode || !editPostalCode.trim()) {
+      setEditPostalHint(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const t = window.setTimeout(async () => {
+      try {
+        const res = await lookupPostalCode({
+          countryCode: editCountryCode,
+          postalCode: editPostalCode,
+          signal: controller.signal,
+        });
+
+        if (!res) {
+          setEditPostalHint('No match found.');
+          return;
+        }
+
+        setEditPostalHint(
+          res.placeCount > 1 ? `Found ${res.placeCount} places.` : 'Match found.',
+        );
+        if (!editCityTouched) setEditCity(res.city);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setEditPostalHint('Lookup failed.');
+      }
+    }, 450);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(t);
+    };
+  }, [editBuilding, editCountryCode, editPostalCode, editCityTouched]);
 
   async function onCreateBuilding(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -156,6 +254,11 @@ export function PropertyBuildingsPanel({
             aria-label="Add building"
             onClick={() => {
               setCreateBuildingError(null);
+              setCreateCountryCode('');
+              setCreatePostalCode('');
+              setCreateCity('');
+              setCreateCityTouched(false);
+              setCreatePostalHint(null);
               setIsCreateBuildingOpen(true);
             }}
           >
@@ -226,6 +329,37 @@ export function PropertyBuildingsPanel({
 
             <form onSubmit={onCreateBuilding} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2">
+                <label className="text-sm text-zinc-300" htmlFor="c-country">
+                  Country
+                </label>
+                <select
+                  id="c-country"
+                  name="country"
+                  value={createCountryCode}
+                  onChange={(e) => {
+                    setCreateCountryCode(e.target.value);
+                  }}
+                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                  required
+                >
+                  <option value="" disabled>
+                    Select country…
+                  </option>
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+
+                {!createCountryCode && (
+                  <div className="text-xs text-zinc-500">
+                    Select country to enter the address.
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="c-name">
                   Building name
                 </label>
@@ -246,6 +380,7 @@ export function PropertyBuildingsPanel({
                   <input
                     id="c-street"
                     name="street"
+                    disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. Sonnenallee"
                     required
@@ -258,6 +393,7 @@ export function PropertyBuildingsPanel({
                   <input
                     id="c-houseNumber"
                     name="houseNumber"
+                    disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 12"
                     required
@@ -266,43 +402,42 @@ export function PropertyBuildingsPanel({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-postalCode">
                     Postal code
                   </label>
                   <input
                     id="c-postalCode"
                     name="postalCode"
+                    value={createPostalCode}
+                    onChange={(e) => setCreatePostalCode(e.target.value)}
+                    disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 12045"
                     required
                   />
+                  {createPostalHint && (
+                    <div className="text-xs text-zinc-500">{createPostalHint}</div>
+                  )}
                 </div>
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-city">
                     City
                   </label>
                   <input
                     id="c-city"
                     name="city"
+                    value={createCity}
+                    onChange={(e) => {
+                      setCreateCityTouched(true);
+                      setCreateCity(e.target.value);
+                    }}
+                    disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. Berlin"
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="c-country">
-                  Country
-                </label>
-                <input
-                  id="c-country"
-                  name="country"
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                  placeholder="e.g. DE"
-                  required
-                />
               </div>
 
               {createBuildingError && (
@@ -353,6 +488,34 @@ export function PropertyBuildingsPanel({
 
             <form onSubmit={onSaveBuilding} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2">
+                <label className="text-sm text-zinc-300" htmlFor="b-country">
+                  Country
+                </label>
+                <select
+                  id="b-country"
+                  name="country"
+                  value={editCountryCode}
+                  onChange={(e) => {
+                    setEditCountryCode(e.target.value);
+                  }}
+                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                  required
+                >
+                  <option value="" disabled>
+                    Select country…
+                  </option>
+                  {!isKnownEditCountryCode && editCountryCode && (
+                    <option value={editCountryCode}>{editCountryCode} (custom)</option>
+                  )}
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="b-name">
                   Building name
                 </label>
@@ -374,6 +537,7 @@ export function PropertyBuildingsPanel({
                     id="b-street"
                     name="street"
                     defaultValue={editBuilding.street}
+                    disabled={!editCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     required
                   />
@@ -386,6 +550,7 @@ export function PropertyBuildingsPanel({
                     id="b-houseNumber"
                     name="houseNumber"
                     defaultValue={editBuilding.houseNumber}
+                    disabled={!editCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     required
                   />
@@ -393,43 +558,40 @@ export function PropertyBuildingsPanel({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="b-postalCode">
                     Postal code
                   </label>
                   <input
                     id="b-postalCode"
                     name="postalCode"
-                    defaultValue={editBuilding.postalCode}
+                    value={editPostalCode}
+                    onChange={(e) => setEditPostalCode(e.target.value)}
+                    disabled={!editCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     required
                   />
+                  {editPostalHint && (
+                    <div className="text-xs text-zinc-500">{editPostalHint}</div>
+                  )}
                 </div>
-                <div className="grid gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="b-city">
                     City
                   </label>
                   <input
                     id="b-city"
                     name="city"
-                    defaultValue={editBuilding.city}
+                    value={editCity}
+                    onChange={(e) => {
+                      setEditCityTouched(true);
+                      setEditCity(e.target.value);
+                    }}
+                    disabled={!editCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="b-country">
-                  Country
-                </label>
-                <input
-                  id="b-country"
-                  name="country"
-                  defaultValue={editBuilding.country}
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                  required
-                />
               </div>
 
               {buildingError && (
