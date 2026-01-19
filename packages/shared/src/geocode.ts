@@ -23,4 +23,3 @@ export const AddressSuggestionSchema = z.object({
 });
 
 export type AddressSuggestion = z.infer<typeof AddressSuggestionSchema>;
-

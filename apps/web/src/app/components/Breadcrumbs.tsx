@@ -49,4 +49,3 @@ export function Breadcrumbs({ items, confirmNavigate }: Props) {
     </nav>
   );
 }
-

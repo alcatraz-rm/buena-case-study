@@ -21,7 +21,8 @@ export default async function BuildingPage({
   const bid = Number(buildingId);
   if (!Number.isFinite(pid) || !Number.isFinite(bid)) notFound();
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
   const [property, building, units] = await Promise.all([
     getJson<Property>(`${apiBaseUrl}/properties/${pid}`),
@@ -40,4 +41,3 @@ export default async function BuildingPage({
     />
   );
 }
-

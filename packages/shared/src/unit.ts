@@ -35,8 +35,12 @@ export const TListUnitsQuery = z.object({
 });
 
 export type CreateUnitDto = z.infer<typeof TCreateUnit>;
-export type CreateUnitUnderBuildingDto = z.infer<typeof TCreateUnitUnderBuilding>;
-export type UpdateUnitUnderBuildingDto = z.infer<typeof TUpdateUnitUnderBuilding>;
+export type CreateUnitUnderBuildingDto = z.infer<
+  typeof TCreateUnitUnderBuilding
+>;
+export type UpdateUnitUnderBuildingDto = z.infer<
+  typeof TUpdateUnitUnderBuilding
+>;
 export type ListUnitsQueryDto = z.infer<typeof TListUnitsQuery>;
 
 // API response shapes (JSON-serialized)

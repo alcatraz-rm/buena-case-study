@@ -1,6 +1,11 @@
 'use client';
 
-import type { AddressSuggestion, Building, Property, Unit } from '@buena/shared';
+import type {
+  AddressSuggestion,
+  Building,
+  Property,
+  Unit,
+} from '@buena/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
@@ -28,10 +33,16 @@ export function BuildingDetailClient({
   const [unitsState, setUnitsState] = useState<Unit[]>(units);
   const [buildingName, setBuildingName] = useState(initialBuilding.name);
 
-  const [countryCode, setCountryCode] = useState<string>(initialBuilding.country);
+  const [countryCode, setCountryCode] = useState<string>(
+    initialBuilding.country,
+  );
   const [street, setStreet] = useState<string>(initialBuilding.street);
-  const [houseNumber, setHouseNumber] = useState<string>(initialBuilding.houseNumber);
-  const [postalCode, setPostalCode] = useState<string>(initialBuilding.postalCode);
+  const [houseNumber, setHouseNumber] = useState<string>(
+    initialBuilding.houseNumber,
+  );
+  const [postalCode, setPostalCode] = useState<string>(
+    initialBuilding.postalCode,
+  );
   const [city, setCity] = useState<string>(initialBuilding.city);
   const [streetSuggestions, setStreetSuggestions] = useState<
     AddressSuggestion[]
@@ -43,7 +54,9 @@ export function BuildingDetailClient({
   const [suppressSuggestions, setSuppressSuggestions] = useState(false);
   const [streetFocused, setStreetFocused] = useState(false);
   const [houseNumberFocused, setHouseNumberFocused] = useState(false);
-  const isKnownCountryCode = COUNTRY_OPTIONS.some((c) => c.code === countryCode);
+  const isKnownCountryCode = COUNTRY_OPTIONS.some(
+    (c) => c.code === countryCode,
+  );
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -163,7 +176,9 @@ export function BuildingDetailClient({
       setSaveOk('Saved.');
       router.refresh();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Something went wrong.');
+      setSaveError(
+        err instanceof Error ? err.message : 'Something went wrong.',
+      );
     } finally {
       setIsSaving(false);
     }
@@ -190,7 +205,9 @@ export function BuildingDetailClient({
       router.push(`/properties/${property.id}?tab=buildings`);
       router.refresh();
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Something went wrong.');
+      setDeleteError(
+        err instanceof Error ? err.message : 'Something went wrong.',
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -305,7 +322,9 @@ export function BuildingDetailClient({
           <div
             className={[
               'overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out',
-              isFormCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1600px] opacity-100',
+              isFormCollapsed
+                ? 'max-h-0 opacity-0'
+                : 'max-h-[1600px] opacity-100',
             ].join(' ')}
             aria-hidden={isFormCollapsed}
           >
@@ -384,41 +403,45 @@ export function BuildingDetailClient({
                   {suggestAnchor === 'street' &&
                     streetFocused &&
                     (isStreetSuggesting || streetSuggestions.length > 0) && (
-                    <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
-                      {isStreetSuggesting && (
-                        <div className="px-3 py-2 text-xs text-zinc-500">
-                          Searching…
-                        </div>
-                      )}
-                      {streetSuggestions.map((s) => (
-                        <button
-                          key={`${s.lat}-${s.lon}`}
-                          type="button"
-                          className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setStreet(s.street);
-                            setHouseNumber(s.houseNumber);
-                            setPostalCode(s.postalCode);
-                            setCity(s.city);
-                            setStreetSuggestions([]);
-                            setSuppressSuggestions(true);
-                          }}
-                        >
-                          <div className="truncate">{s.label}</div>
-                        </button>
-                      ))}
-                      {!isStreetSuggesting && streetSuggestions.length === 0 && (
-                        <div className="px-3 py-2 text-xs text-zinc-500">
-                          No suggestions.
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                        {isStreetSuggesting && (
+                          <div className="px-3 py-2 text-xs text-zinc-500">
+                            Searching…
+                          </div>
+                        )}
+                        {streetSuggestions.map((s) => (
+                          <button
+                            key={`${s.lat}-${s.lon}`}
+                            type="button"
+                            className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setStreet(s.street);
+                              setHouseNumber(s.houseNumber);
+                              setPostalCode(s.postalCode);
+                              setCity(s.city);
+                              setStreetSuggestions([]);
+                              setSuppressSuggestions(true);
+                            }}
+                          >
+                            <div className="truncate">{s.label}</div>
+                          </button>
+                        ))}
+                        {!isStreetSuggesting &&
+                          streetSuggestions.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-zinc-500">
+                              No suggestions.
+                            </div>
+                          )}
+                      </div>
+                    )}
                 </div>
 
                 <div className="relative flex flex-col gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="houseNumber">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="houseNumber"
+                  >
                     House number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
@@ -460,17 +483,18 @@ export function BuildingDetailClient({
                               setPostalCode(s.postalCode);
                               setCity(s.city);
                               setStreetSuggestions([]);
-                            setSuppressSuggestions(true);
+                              setSuppressSuggestions(true);
                             }}
                           >
                             <div className="truncate">{s.label}</div>
                           </button>
                         ))}
-                        {!isStreetSuggesting && streetSuggestions.length === 0 && (
-                          <div className="px-3 py-2 text-xs text-zinc-500">
-                            No suggestions.
-                          </div>
-                        )}
+                        {!isStreetSuggesting &&
+                          streetSuggestions.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-zinc-500">
+                              No suggestions.
+                            </div>
+                          )}
                       </div>
                     )}
                 </div>
@@ -548,4 +572,3 @@ export function BuildingDetailClient({
     </div>
   );
 }
-

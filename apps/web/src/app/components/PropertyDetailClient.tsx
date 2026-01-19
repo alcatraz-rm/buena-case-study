@@ -87,7 +87,8 @@ export function PropertyDetailClient({
       const nextName = name.trim();
       if (!nextName) throw new Error('Name is required.');
       if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
-      if (!Number.isFinite(accountantId)) throw new Error('Accountant is required.');
+      if (!Number.isFinite(accountantId))
+        throw new Error('Accountant is required.');
 
       const res = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
         method: 'PATCH',
@@ -238,7 +239,9 @@ export function PropertyDetailClient({
             <button
               type="button"
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100 hover:bg-zinc-800"
-              aria-label={isFormCollapsed ? 'Expand basic info' : 'Collapse basic info'}
+              aria-label={
+                isFormCollapsed ? 'Expand basic info' : 'Collapse basic info'
+              }
               aria-expanded={!isFormCollapsed}
               onClick={() => setIsFormCollapsed((v) => !v)}
             >
@@ -262,7 +265,9 @@ export function PropertyDetailClient({
           <div
             className={[
               'overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out',
-              isFormCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1200px] opacity-100',
+              isFormCollapsed
+                ? 'max-h-0 opacity-0'
+                : 'max-h-[1200px] opacity-100',
             ].join(' ')}
             aria-hidden={isFormCollapsed}
           >

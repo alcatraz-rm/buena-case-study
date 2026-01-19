@@ -64,7 +64,9 @@ export function BuildingUnitsPanel({
       sizeSqm: editUnit.sizeSqm === null ? '' : String(editUnit.sizeSqm),
       coOwnershipShare: editUnit.coOwnershipShare ?? '',
       constructionYear:
-        editUnit.constructionYear === null ? '' : String(editUnit.constructionYear),
+        editUnit.constructionYear === null
+          ? ''
+          : String(editUnit.constructionYear),
       rooms: editUnit.rooms === null ? '' : String(editUnit.rooms),
     });
   }, [editUnit]);
@@ -75,7 +77,9 @@ export function BuildingUnitsPanel({
       ? editDraft.description.trim()
       : null;
     const floor = editDraft.floor.trim() ? editDraft.floor.trim() : null;
-    const entrance = editDraft.entrance.trim() ? editDraft.entrance.trim() : null;
+    const entrance = editDraft.entrance.trim()
+      ? editDraft.entrance.trim()
+      : null;
 
     const sizeSqmStr = editDraft.sizeSqm.trim();
     const sizeSqm = sizeSqmStr ? Number(sizeSqmStr) : null;
@@ -95,13 +99,17 @@ export function BuildingUnitsPanel({
       description !== editUnit.description ||
       floor !== editUnit.floor ||
       entrance !== editUnit.entrance ||
-      (sizeSqmStr ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm : editUnit.sizeSqm !== null) ||
+      (sizeSqmStr
+        ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm
+        : editUnit.sizeSqm !== null) ||
       coOwnershipShare !== editUnit.coOwnershipShare ||
       (constructionYearStr
         ? Number.isFinite(constructionYear) &&
           constructionYear !== editUnit.constructionYear
         : editUnit.constructionYear !== null) ||
-      (roomsStr ? Number.isFinite(rooms) && rooms !== editUnit.rooms : editUnit.rooms !== null)
+      (roomsStr
+        ? Number.isFinite(rooms) && rooms !== editUnit.rooms
+        : editUnit.rooms !== null)
     );
   })();
 
@@ -112,13 +120,17 @@ export function BuildingUnitsPanel({
 
     try {
       const formData = new FormData(e.currentTarget);
-      const unitType = String(formData.get('unitType') ?? 'Apartment') as BuildingUnitType;
+      const unitType = String(
+        formData.get('unitType') ?? 'Apartment',
+      ) as BuildingUnitType;
       const number = String(formData.get('number') ?? '').trim();
       const descriptionRaw = String(formData.get('description') ?? '').trim();
       const floorRaw = String(formData.get('floor') ?? '').trim();
       const entranceRaw = String(formData.get('entrance') ?? '').trim();
       const sizeSqmRaw = String(formData.get('sizeSqm') ?? '').trim();
-      const coOwnershipShareRaw = String(formData.get('coOwnershipShare') ?? '').trim();
+      const coOwnershipShareRaw = String(
+        formData.get('coOwnershipShare') ?? '',
+      ).trim();
       const constructionYearRaw = String(
         formData.get('constructionYear') ?? '',
       ).trim();
@@ -134,7 +146,9 @@ export function BuildingUnitsPanel({
         entrance: entranceRaw ? entranceRaw : null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
         coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
-        constructionYear: constructionYearRaw ? Number(constructionYearRaw) : null,
+        constructionYear: constructionYearRaw
+          ? Number(constructionYearRaw)
+          : null,
         rooms: roomsRaw ? Number(roomsRaw) : null,
       };
 
@@ -166,7 +180,9 @@ export function BuildingUnitsPanel({
       setUnits((prev) => [created, ...prev]);
       setIsCreateOpen(false);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Something went wrong.');
+      setCreateError(
+        err instanceof Error ? err.message : 'Something went wrong.',
+      );
     } finally {
       setIsCreating(false);
     }
@@ -200,7 +216,9 @@ export function BuildingUnitsPanel({
         entrance: entranceRaw ? entranceRaw : null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
         coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
-        constructionYear: constructionYearRaw ? Number(constructionYearRaw) : null,
+        constructionYear: constructionYearRaw
+          ? Number(constructionYearRaw)
+          : null,
         rooms: roomsRaw ? Number(roomsRaw) : null,
       };
 
@@ -217,11 +235,14 @@ export function BuildingUnitsPanel({
         throw new Error('Rooms must be a number.');
       }
 
-      const res = await fetch(`${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`,
+        {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -232,7 +253,9 @@ export function BuildingUnitsPanel({
       setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
       setEditUnit(null);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Something went wrong.');
+      setSaveError(
+        err instanceof Error ? err.message : 'Something went wrong.',
+      );
     } finally {
       setIsSaving(false);
     }
@@ -247,9 +270,12 @@ export function BuildingUnitsPanel({
       const ok = window.confirm('Delete this unit?');
       if (!ok) return;
 
-      const res = await fetch(`${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(
+        `${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -259,7 +285,9 @@ export function BuildingUnitsPanel({
       setUnits((prev) => prev.filter((u) => u.id !== editUnit.id));
       setEditUnit(null);
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Something went wrong.');
+      setDeleteError(
+        err instanceof Error ? err.message : 'Something went wrong.',
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -271,7 +299,9 @@ export function BuildingUnitsPanel({
         <div className="flex items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-5 py-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-sm font-medium text-zinc-200">Units</h2>
-            <p className="text-xs text-zinc-400">Units linked to this building.</p>
+            <p className="text-xs text-zinc-400">
+              Units linked to this building.
+            </p>
           </div>
 
           <button
@@ -366,7 +396,9 @@ export function BuildingUnitsPanel({
             <div className="flex items-center justify-between border-b border-zinc-900 px-5 py-4">
               <div className="flex flex-col gap-1">
                 <h2 className="text-base font-semibold">New unit</h2>
-                <p className="text-xs text-zinc-400">Add a unit to this building.</p>
+                <p className="text-xs text-zinc-400">
+                  Add a unit to this building.
+                </p>
               </div>
             </div>
 
@@ -405,7 +437,10 @@ export function BuildingUnitsPanel({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="c-description">
+                <label
+                  className="text-sm text-zinc-300"
+                  htmlFor="c-description"
+                >
                   Description
                 </label>
                 <textarea
@@ -589,7 +624,10 @@ export function BuildingUnitsPanel({
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="e-description">
+                <label
+                  className="text-sm text-zinc-300"
+                  htmlFor="e-description"
+                >
                   Description
                 </label>
                 <textarea
@@ -791,4 +829,3 @@ export function BuildingUnitsPanel({
     </>
   );
 }
-

@@ -76,4 +76,4 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
   { code: 'VI', name: 'U.S. Virgin Islands' },
   { code: 'YT', name: 'Mayotte' },
   { code: 'ZA', name: 'South Africa' },
-];
+].sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));

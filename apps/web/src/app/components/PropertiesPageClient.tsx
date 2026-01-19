@@ -1,6 +1,12 @@
 'use client';
 
-import type { CreatePropertyDto, ManagementType, PersonOption, Property, PropertyListItem } from '@buena/shared';
+import type {
+  CreatePropertyDto,
+  ManagementType,
+  PersonOption,
+  Property,
+  PropertyListItem,
+} from '@buena/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';

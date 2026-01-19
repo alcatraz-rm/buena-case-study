@@ -116,11 +116,21 @@ export function PropertyBuildingsPanel({
       if (!city) throw new Error('City is required.');
       if (!country) throw new Error('Country is required.');
 
-      const res = await fetch(`${apiBaseUrl}/properties/${propertyId}/buildings`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, street, houseNumber, postalCode, city, country }),
-      });
+      const res = await fetch(
+        `${apiBaseUrl}/properties/${propertyId}/buildings`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            street,
+            houseNumber,
+            postalCode,
+            city,
+            country,
+          }),
+        },
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -146,7 +156,9 @@ export function PropertyBuildingsPanel({
         <div className="flex items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-5 py-4">
           <div className="flex flex-col gap-1">
             <h2 className="text-sm font-medium text-zinc-200">Buildings</h2>
-            <p className="text-xs text-zinc-400">Buildings linked to this property.</p>
+            <p className="text-xs text-zinc-400">
+              Buildings linked to this property.
+            </p>
           </div>
 
           <button
@@ -184,7 +196,8 @@ export function PropertyBuildingsPanel({
                   {b.name}
                 </div>
                 <div className="mt-1 truncate text-xs text-zinc-400">
-                  {b.street} {b.houseNumber}, {b.postalCode} {b.city}, {b.country}
+                  {b.street} {b.houseNumber}, {b.postalCode} {b.city},{' '}
+                  {b.country}
                 </div>
               </Link>
 
@@ -192,7 +205,9 @@ export function PropertyBuildingsPanel({
                 <button
                   type="button"
                   className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
-                  onClick={() => router.push(`/properties/${propertyId}/buildings/${b.id}`)}
+                  onClick={() =>
+                    router.push(`/properties/${propertyId}/buildings/${b.id}`)
+                  }
                   aria-label="Edit building"
                 >
                   <svg
@@ -226,11 +241,16 @@ export function PropertyBuildingsPanel({
             <div className="flex items-center justify-between border-b border-zinc-900 px-5 py-4">
               <div className="flex flex-col gap-1">
                 <h2 className="text-base font-semibold">New building</h2>
-                <p className="text-xs text-zinc-400">Add a building to this property.</p>
+                <p className="text-xs text-zinc-400">
+                  Add a building to this property.
+                </p>
               </div>
             </div>
 
-            <form onSubmit={onCreateBuilding} className="flex flex-col gap-4 px-5 py-4">
+            <form
+              onSubmit={onCreateBuilding}
+              className="flex flex-col gap-4 px-5 py-4"
+            >
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="c-country">
                   Country<span className="ml-1 text-red-400">*</span>
@@ -301,41 +321,46 @@ export function PropertyBuildingsPanel({
                   />
                   {createSuggestAnchor === 'street' &&
                     createStreetFocused &&
-                    (isCreateSuggesting || createStreetSuggestions.length > 0) && (
-                    <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
-                      {isCreateSuggesting && (
-                        <div className="px-3 py-2 text-xs text-zinc-500">
-                          Searching…
-                        </div>
-                      )}
-                      {createStreetSuggestions.map((s) => (
-                        <button
-                          key={`${s.lat}-${s.lon}`}
-                          type="button"
-                          className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setCreateStreet(s.street);
-                            setCreateHouseNumber(s.houseNumber);
-                            setCreatePostalCode(s.postalCode);
-                            setCreateCity(s.city);
-                            setCreateStreetSuggestions([]);
-                            setCreateSuppressSuggestions(true);
-                          }}
-                        >
-                          <div className="truncate">{s.label}</div>
-                        </button>
-                      ))}
-                      {!isCreateSuggesting && createStreetSuggestions.length === 0 && (
-                        <div className="px-3 py-2 text-xs text-zinc-500">
-                          No suggestions.
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    (isCreateSuggesting ||
+                      createStreetSuggestions.length > 0) && (
+                      <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
+                        {isCreateSuggesting && (
+                          <div className="px-3 py-2 text-xs text-zinc-500">
+                            Searching…
+                          </div>
+                        )}
+                        {createStreetSuggestions.map((s) => (
+                          <button
+                            key={`${s.lat}-${s.lon}`}
+                            type="button"
+                            className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setCreateStreet(s.street);
+                              setCreateHouseNumber(s.houseNumber);
+                              setCreatePostalCode(s.postalCode);
+                              setCreateCity(s.city);
+                              setCreateStreetSuggestions([]);
+                              setCreateSuppressSuggestions(true);
+                            }}
+                          >
+                            <div className="truncate">{s.label}</div>
+                          </button>
+                        ))}
+                        {!isCreateSuggesting &&
+                          createStreetSuggestions.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-zinc-500">
+                              No suggestions.
+                            </div>
+                          )}
+                      </div>
+                    )}
                 </div>
                 <div className="relative flex flex-col gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="c-houseNumber">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="c-houseNumber"
+                  >
                     House number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
@@ -359,7 +384,8 @@ export function PropertyBuildingsPanel({
                   />
                   {createSuggestAnchor === 'houseNumber' &&
                     createHouseNumberFocused &&
-                    (isCreateSuggesting || createStreetSuggestions.length > 0) && (
+                    (isCreateSuggesting ||
+                      createStreetSuggestions.length > 0) && (
                       <div className="absolute left-0 right-0 top-[4.75rem] z-10 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl">
                         {isCreateSuggesting && (
                           <div className="px-3 py-2 text-xs text-zinc-500">
@@ -378,7 +404,7 @@ export function PropertyBuildingsPanel({
                               setCreatePostalCode(s.postalCode);
                               setCreateCity(s.city);
                               setCreateStreetSuggestions([]);
-                            setCreateSuppressSuggestions(true);
+                              setCreateSuppressSuggestions(true);
                             }}
                           >
                             <div className="truncate">{s.label}</div>
@@ -397,7 +423,10 @@ export function PropertyBuildingsPanel({
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="c-postalCode">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="c-postalCode"
+                  >
                     Postal code<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
@@ -462,4 +491,3 @@ export function PropertyBuildingsPanel({
     </>
   );
 }
-

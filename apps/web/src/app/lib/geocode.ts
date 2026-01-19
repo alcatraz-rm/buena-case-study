@@ -20,4 +20,3 @@ export async function suggestAddresses(args: {
   const parsed = TAddressSuggestionList.safeParse(json);
   return parsed.success ? parsed.data : [];
 }
-
