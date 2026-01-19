@@ -28,9 +28,12 @@ export function BuildingUnitsPanel({
   const [editDraft, setEditDraft] = useState<{
     number: string;
     unitType: BuildingUnitType;
+    description: string;
     floor: string;
     entrance: string;
     sizeSqm: string;
+    coOwnershipShare: string;
+    constructionYear: string;
     rooms: string;
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,29 +58,49 @@ export function BuildingUnitsPanel({
     setEditDraft({
       number: editUnit.number,
       unitType: editUnit.unitType,
+      description: editUnit.description ?? '',
       floor: editUnit.floor ?? '',
       entrance: editUnit.entrance ?? '',
       sizeSqm: editUnit.sizeSqm === null ? '' : String(editUnit.sizeSqm),
+      coOwnershipShare: editUnit.coOwnershipShare ?? '',
+      constructionYear:
+        editUnit.constructionYear === null ? '' : String(editUnit.constructionYear),
       rooms: editUnit.rooms === null ? '' : String(editUnit.rooms),
     });
   }, [editUnit]);
 
   const isEditDirty = (() => {
     if (!editUnit || !editDraft) return false;
+    const description = editDraft.description.trim()
+      ? editDraft.description.trim()
+      : null;
     const floor = editDraft.floor.trim() ? editDraft.floor.trim() : null;
     const entrance = editDraft.entrance.trim() ? editDraft.entrance.trim() : null;
 
     const sizeSqmStr = editDraft.sizeSqm.trim();
     const sizeSqm = sizeSqmStr ? Number(sizeSqmStr) : null;
+    const coOwnershipShare = editDraft.coOwnershipShare.trim()
+      ? editDraft.coOwnershipShare.trim()
+      : null;
+    const constructionYearStr = editDraft.constructionYear.trim();
+    const constructionYear = constructionYearStr
+      ? Number(constructionYearStr)
+      : null;
     const roomsStr = editDraft.rooms.trim();
     const rooms = roomsStr ? Number(roomsStr) : null;
 
     return (
       editDraft.number.trim() !== editUnit.number ||
       editDraft.unitType !== editUnit.unitType ||
+      description !== editUnit.description ||
       floor !== editUnit.floor ||
       entrance !== editUnit.entrance ||
       (sizeSqmStr ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm : editUnit.sizeSqm !== null) ||
+      coOwnershipShare !== editUnit.coOwnershipShare ||
+      (constructionYearStr
+        ? Number.isFinite(constructionYear) &&
+          constructionYear !== editUnit.constructionYear
+        : editUnit.constructionYear !== null) ||
       (roomsStr ? Number.isFinite(rooms) && rooms !== editUnit.rooms : editUnit.rooms !== null)
     );
   })();
@@ -91,9 +114,14 @@ export function BuildingUnitsPanel({
       const formData = new FormData(e.currentTarget);
       const unitType = String(formData.get('unitType') ?? 'Apartment') as BuildingUnitType;
       const number = String(formData.get('number') ?? '').trim();
+      const descriptionRaw = String(formData.get('description') ?? '').trim();
       const floorRaw = String(formData.get('floor') ?? '').trim();
       const entranceRaw = String(formData.get('entrance') ?? '').trim();
       const sizeSqmRaw = String(formData.get('sizeSqm') ?? '').trim();
+      const coOwnershipShareRaw = String(formData.get('coOwnershipShare') ?? '').trim();
+      const constructionYearRaw = String(
+        formData.get('constructionYear') ?? '',
+      ).trim();
       const roomsRaw = String(formData.get('rooms') ?? '').trim();
 
       if (!number) throw new Error('Unit number is required.');
@@ -101,14 +129,23 @@ export function BuildingUnitsPanel({
       const payload = {
         unitType,
         number,
+        description: descriptionRaw ? descriptionRaw : null,
         floor: floorRaw ? floorRaw : null,
         entrance: entranceRaw ? entranceRaw : null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
+        coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
+        constructionYear: constructionYearRaw ? Number(constructionYearRaw) : null,
         rooms: roomsRaw ? Number(roomsRaw) : null,
       };
 
       if (payload.sizeSqm !== null && !Number.isFinite(payload.sizeSqm)) {
         throw new Error('Size must be a number.');
+      }
+      if (
+        payload.constructionYear !== null &&
+        !Number.isFinite(payload.constructionYear)
+      ) {
+        throw new Error('Construction year must be a number.');
       }
       if (payload.rooms !== null && !Number.isFinite(payload.rooms)) {
         throw new Error('Rooms must be a number.');
@@ -145,9 +182,12 @@ export function BuildingUnitsPanel({
     try {
       const unitType = editDraft.unitType;
       const number = editDraft.number.trim();
+      const descriptionRaw = editDraft.description.trim();
       const floorRaw = editDraft.floor.trim();
       const entranceRaw = editDraft.entrance.trim();
       const sizeSqmRaw = editDraft.sizeSqm.trim();
+      const coOwnershipShareRaw = editDraft.coOwnershipShare.trim();
+      const constructionYearRaw = editDraft.constructionYear.trim();
       const roomsRaw = editDraft.rooms.trim();
 
       if (!number) throw new Error('Unit number is required.');
@@ -155,14 +195,23 @@ export function BuildingUnitsPanel({
       const payload = {
         unitType,
         number,
+        description: descriptionRaw ? descriptionRaw : null,
         floor: floorRaw ? floorRaw : null,
         entrance: entranceRaw ? entranceRaw : null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
+        coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
+        constructionYear: constructionYearRaw ? Number(constructionYearRaw) : null,
         rooms: roomsRaw ? Number(roomsRaw) : null,
       };
 
       if (payload.sizeSqm !== null && !Number.isFinite(payload.sizeSqm)) {
         throw new Error('Size must be a number.');
+      }
+      if (
+        payload.constructionYear !== null &&
+        !Number.isFinite(payload.constructionYear)
+      ) {
+        throw new Error('Construction year must be a number.');
       }
       if (payload.rooms !== null && !Number.isFinite(payload.rooms)) {
         throw new Error('Rooms must be a number.');
@@ -331,6 +380,19 @@ export function BuildingUnitsPanel({
                 </div>
               </div>
 
+              <div className="grid gap-2">
+                <label className="text-sm text-zinc-300" htmlFor="c-description">
+                  Description (optional)
+                </label>
+                <textarea
+                  id="c-description"
+                  name="description"
+                  rows={3}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                  placeholder="e.g. 2-room apartment with balcony"
+                />
+              </div>
+
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-floor">
@@ -379,6 +441,38 @@ export function BuildingUnitsPanel({
                     inputMode="decimal"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 2"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="c-constructionYear"
+                  >
+                    Construction year (optional)
+                  </label>
+                  <input
+                    id="c-constructionYear"
+                    name="constructionYear"
+                    inputMode="numeric"
+                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    placeholder="e.g. 1998"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="c-coOwnershipShare"
+                  >
+                    Co-ownership share (optional)
+                  </label>
+                  <input
+                    id="c-coOwnershipShare"
+                    name="coOwnershipShare"
+                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    placeholder="e.g. 45/1000"
                   />
                 </div>
               </div>
@@ -477,6 +571,25 @@ export function BuildingUnitsPanel({
                 </div>
               </div>
 
+              <div className="grid gap-2">
+                <label className="text-sm text-zinc-300" htmlFor="e-description">
+                  Description (optional)
+                </label>
+                <textarea
+                  id="e-description"
+                  name="description"
+                  rows={3}
+                  value={editDraft?.description ?? ''}
+                  onChange={(e) =>
+                    setEditDraft((prev) =>
+                      prev ? { ...prev, description: e.target.value } : prev,
+                    )
+                  }
+                  className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                  placeholder="e.g. 2-room apartment with balcony"
+                />
+              </div>
+
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-floor">
@@ -549,6 +662,54 @@ export function BuildingUnitsPanel({
                     inputMode="decimal"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 2"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="e-constructionYear"
+                  >
+                    Construction year (optional)
+                  </label>
+                  <input
+                    id="e-constructionYear"
+                    name="constructionYear"
+                    inputMode="numeric"
+                    value={editDraft?.constructionYear ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev
+                          ? { ...prev, constructionYear: e.target.value }
+                          : prev,
+                      )
+                    }
+                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    placeholder="e.g. 1998"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label
+                    className="text-sm text-zinc-300"
+                    htmlFor="e-coOwnershipShare"
+                  >
+                    Co-ownership share (optional)
+                  </label>
+                  <input
+                    id="e-coOwnershipShare"
+                    name="coOwnershipShare"
+                    value={editDraft?.coOwnershipShare ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev
+                          ? { ...prev, coOwnershipShare: e.target.value }
+                          : prev,
+                      )
+                    }
+                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    placeholder="e.g. 45/1000"
                   />
                 </div>
               </div>

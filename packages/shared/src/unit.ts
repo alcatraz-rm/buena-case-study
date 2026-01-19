@@ -12,6 +12,7 @@ export type BuildingUnitType = z.infer<typeof BuildingUnitTypeSchema>;
 export const TCreateUnitBase = z.object({
   unitType: BuildingUnitTypeSchema,
   number: z.string(),
+  description: z.string().nullable().optional(),
   floor: z.string().nullable().optional(),
   entrance: z.string().nullable().optional(),
   sizeSqm: z.number().positive().nullable().optional(),
@@ -44,6 +45,7 @@ export type Unit = {
   buildingId: number;
   unitType: BuildingUnitType;
   number: string;
+  description: string | null;
   floor: string | null;
   entrance: string | null;
   sizeSqm: number | null;

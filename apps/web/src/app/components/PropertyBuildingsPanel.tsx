@@ -130,7 +130,7 @@ export function PropertyBuildingsPanel({
       const created = (await res.json()) as Building;
       setBuildings((prev) => [created, ...prev]);
       setIsCreateBuildingOpen(false);
-      router.push(`/properties/${propertyId}/buildings/${created.id}`);
+      router.refresh();
     } catch (err) {
       setCreateBuildingError(
         err instanceof Error ? err.message : 'Something went wrong.',

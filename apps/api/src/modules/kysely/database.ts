@@ -49,6 +49,7 @@ export interface BuildingUnitTable extends BaseTable {
   buildingId: number;
   unitType: BuildingUnitType;
   number: string;
+  description: string | null;
   floor: string | null;
   entrance: string | null;
   sizeSqm: number | null;

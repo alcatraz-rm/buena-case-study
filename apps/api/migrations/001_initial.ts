@@ -107,6 +107,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .addColumn('unitType', sql`building_unit_type`, (col) => col.notNull())
     .addColumn('number', 'text', (col) => col.notNull())
+    .addColumn('description', 'text')
     .addColumn('floor', 'text')
     .addColumn('entrance', 'text')
     .addColumn('sizeSqm', 'numeric')

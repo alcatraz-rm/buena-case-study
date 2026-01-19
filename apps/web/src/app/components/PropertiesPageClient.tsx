@@ -73,7 +73,8 @@ export function PropertiesPageClient({
 
       const created = (await res.json()) as Property;
       setIsOpen(false);
-      router.push(`/properties/${created.id}`);
+      void created;
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
