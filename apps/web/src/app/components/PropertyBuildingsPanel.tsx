@@ -216,14 +216,6 @@ export function PropertyBuildingsPanel({
                 <h2 className="text-base font-semibold">New building</h2>
                 <p className="text-xs text-zinc-400">Add a building to this property.</p>
               </div>
-
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
-                onClick={() => setIsCreateBuildingOpen(false)}
-              >
-                Close
-              </button>
             </div>
 
             <form onSubmit={onCreateBuilding} className="flex flex-col gap-4 px-5 py-4">

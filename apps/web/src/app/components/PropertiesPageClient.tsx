@@ -159,14 +159,6 @@ export function PropertiesPageClient({
                   Create a property (WEG/MV) and assign manager/accountant.
                 </p>
               </div>
-
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
-                onClick={() => setIsOpen(false)}
-              >
-                Close
-              </button>
             </div>
 
             <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">

@@ -337,14 +337,6 @@ export function BuildingUnitsPanel({
                 <h2 className="text-base font-semibold">New unit</h2>
                 <p className="text-xs text-zinc-400">Add a unit to this building.</p>
               </div>
-
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
-                onClick={() => setIsCreateOpen(false)}
-              >
-                Close
-              </button>
             </div>
 
             <form onSubmit={onCreate} className="flex flex-col gap-4 px-5 py-4">
