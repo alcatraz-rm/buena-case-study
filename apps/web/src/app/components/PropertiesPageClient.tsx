@@ -284,7 +284,7 @@ export function PropertiesPageClient({
 
                 <button
                   type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
+                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Creating…' : 'Create'}

@@ -25,6 +25,14 @@ export function BuildingUnitsPanel({
   const [createError, setCreateError] = useState<string | null>(null);
 
   const [editUnit, setEditUnit] = useState<Unit | null>(null);
+  const [editDraft, setEditDraft] = useState<{
+    number: string;
+    unitType: BuildingUnitType;
+    floor: string;
+    entrance: string;
+    sizeSqm: string;
+    rooms: string;
+  } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -38,6 +46,41 @@ export function BuildingUnitsPanel({
   useEffect(() => {
     onUnitsChange?.(units);
   }, [units, onUnitsChange]);
+
+  useEffect(() => {
+    if (!editUnit) {
+      setEditDraft(null);
+      return;
+    }
+    setEditDraft({
+      number: editUnit.number,
+      unitType: editUnit.unitType,
+      floor: editUnit.floor ?? '',
+      entrance: editUnit.entrance ?? '',
+      sizeSqm: editUnit.sizeSqm === null ? '' : String(editUnit.sizeSqm),
+      rooms: editUnit.rooms === null ? '' : String(editUnit.rooms),
+    });
+  }, [editUnit]);
+
+  const isEditDirty = (() => {
+    if (!editUnit || !editDraft) return false;
+    const floor = editDraft.floor.trim() ? editDraft.floor.trim() : null;
+    const entrance = editDraft.entrance.trim() ? editDraft.entrance.trim() : null;
+
+    const sizeSqmStr = editDraft.sizeSqm.trim();
+    const sizeSqm = sizeSqmStr ? Number(sizeSqmStr) : null;
+    const roomsStr = editDraft.rooms.trim();
+    const rooms = roomsStr ? Number(roomsStr) : null;
+
+    return (
+      editDraft.number.trim() !== editUnit.number ||
+      editDraft.unitType !== editUnit.unitType ||
+      floor !== editUnit.floor ||
+      entrance !== editUnit.entrance ||
+      (sizeSqmStr ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm : editUnit.sizeSqm !== null) ||
+      (roomsStr ? Number.isFinite(rooms) && rooms !== editUnit.rooms : editUnit.rooms !== null)
+    );
+  })();
 
   async function onCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -94,19 +137,18 @@ export function BuildingUnitsPanel({
 
   async function onSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!editUnit) return;
+    if (!editUnit || !editDraft) return;
 
     setSaveError(null);
     setIsSaving(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const unitType = String(formData.get('unitType') ?? editUnit.unitType) as BuildingUnitType;
-      const number = String(formData.get('number') ?? '').trim();
-      const floorRaw = String(formData.get('floor') ?? '').trim();
-      const entranceRaw = String(formData.get('entrance') ?? '').trim();
-      const sizeSqmRaw = String(formData.get('sizeSqm') ?? '').trim();
-      const roomsRaw = String(formData.get('rooms') ?? '').trim();
+      const unitType = editDraft.unitType;
+      const number = editDraft.number.trim();
+      const floorRaw = editDraft.floor.trim();
+      const entranceRaw = editDraft.entrance.trim();
+      const sizeSqmRaw = editDraft.sizeSqm.trim();
+      const roomsRaw = editDraft.rooms.trim();
 
       if (!number) throw new Error('Unit number is required.');
 
@@ -358,7 +400,7 @@ export function BuildingUnitsPanel({
                 </button>
                 <button
                   type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
+                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
                   disabled={isCreating}
                 >
                   {isCreating ? 'Creating…' : 'Create unit'}
@@ -396,7 +438,12 @@ export function BuildingUnitsPanel({
                   <input
                     id="e-number"
                     name="number"
-                    defaultValue={editUnit.number}
+                    value={editDraft?.number ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev ? { ...prev, number: e.target.value } : prev,
+                      )
+                    }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     required
                   />
@@ -409,7 +456,17 @@ export function BuildingUnitsPanel({
                   <select
                     id="e-unitType"
                     name="unitType"
-                    defaultValue={editUnit.unitType}
+                    value={editDraft?.unitType ?? 'Apartment'}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              unitType: e.target.value as BuildingUnitType,
+                            }
+                          : prev,
+                      )
+                    }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                   >
                     <option value="Apartment">Apartment</option>
@@ -428,7 +485,12 @@ export function BuildingUnitsPanel({
                   <input
                     id="e-floor"
                     name="floor"
-                    defaultValue={editUnit.floor ?? ''}
+                    value={editDraft?.floor ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev ? { ...prev, floor: e.target.value } : prev,
+                      )
+                    }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 2"
                   />
@@ -440,7 +502,12 @@ export function BuildingUnitsPanel({
                   <input
                     id="e-entrance"
                     name="entrance"
-                    defaultValue={editUnit.entrance ?? ''}
+                    value={editDraft?.entrance ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev ? { ...prev, entrance: e.target.value } : prev,
+                      )
+                    }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. A"
                   />
@@ -455,7 +522,12 @@ export function BuildingUnitsPanel({
                   <input
                     id="e-sizeSqm"
                     name="sizeSqm"
-                    defaultValue={editUnit.sizeSqm ?? ''}
+                    value={editDraft?.sizeSqm ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev ? { ...prev, sizeSqm: e.target.value } : prev,
+                      )
+                    }
                     inputMode="decimal"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 54"
@@ -468,7 +540,12 @@ export function BuildingUnitsPanel({
                   <input
                     id="e-rooms"
                     name="rooms"
-                    defaultValue={editUnit.rooms ?? ''}
+                    value={editDraft?.rooms ?? ''}
+                    onChange={(e) =>
+                      setEditDraft((prev) =>
+                        prev ? { ...prev, rooms: e.target.value } : prev,
+                      )
+                    }
                     inputMode="decimal"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 2"
@@ -503,8 +580,8 @@ export function BuildingUnitsPanel({
                   </button>
                   <button
                     type="submit"
-                    className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
-                    disabled={isSaving}
+                    className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
+                    disabled={isSaving || isDeleting || !isEditDirty}
                   >
                     {isSaving ? 'Saving…' : 'Save'}
                   </button>

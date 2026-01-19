@@ -26,7 +26,7 @@ export function BuildingDetailClient({
 
   const [building, setBuilding] = useState<Building>(initialBuilding);
   const [unitsState, setUnitsState] = useState<Unit[]>(units);
-  const [isDirty, setIsDirty] = useState(false);
+  const [buildingName, setBuildingName] = useState(initialBuilding.name);
 
   const [countryCode, setCountryCode] = useState<string>(initialBuilding.country);
   const [street, setStreet] = useState<string>(initialBuilding.street);
@@ -51,6 +51,14 @@ export function BuildingDetailClient({
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isDirty =
+    buildingName !== building.name ||
+    countryCode !== building.country ||
+    street !== building.street ||
+    houseNumber !== building.houseNumber ||
+    postalCode !== building.postalCode ||
+    city !== building.city;
 
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
@@ -109,27 +117,33 @@ export function BuildingDetailClient({
     setIsSaving(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const name = String(formData.get('name') ?? '').trim();
-      const street = String(formData.get('street') ?? '').trim();
-      const houseNumber = String(formData.get('houseNumber') ?? '').trim();
-      const postalCode = String(formData.get('postalCode') ?? '').trim();
-      const city = String(formData.get('city') ?? '').trim();
-      const country = String(formData.get('country') ?? '').trim();
+      const name = buildingName.trim();
+      const streetTrimmed = street.trim();
+      const houseNumberTrimmed = houseNumber.trim();
+      const postalCodeTrimmed = postalCode.trim();
+      const cityTrimmed = city.trim();
+      const countryTrimmed = countryCode.trim();
 
       if (!name) throw new Error('Building name is required.');
-      if (!street) throw new Error('Street is required.');
-      if (!houseNumber) throw new Error('House number is required.');
-      if (!postalCode) throw new Error('Postal code is required.');
-      if (!city) throw new Error('City is required.');
-      if (!country) throw new Error('Country is required.');
+      if (!streetTrimmed) throw new Error('Street is required.');
+      if (!houseNumberTrimmed) throw new Error('House number is required.');
+      if (!postalCodeTrimmed) throw new Error('Postal code is required.');
+      if (!cityTrimmed) throw new Error('City is required.');
+      if (!countryTrimmed) throw new Error('Country is required.');
 
       const res = await fetch(
         `${apiBaseUrl}/properties/${property.id}/buildings/${building.id}`,
         {
           method: 'PATCH',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name, street, houseNumber, postalCode, city, country }),
+          body: JSON.stringify({
+            name,
+            street: streetTrimmed,
+            houseNumber: houseNumberTrimmed,
+            postalCode: postalCodeTrimmed,
+            city: cityTrimmed,
+            country: countryTrimmed,
+          }),
         },
       );
 
@@ -140,13 +154,13 @@ export function BuildingDetailClient({
 
       const updated = (await res.json()) as Building;
       setBuilding(updated);
+      setBuildingName(updated.name);
       setCountryCode(updated.country);
       setStreet(updated.street);
       setHouseNumber(updated.houseNumber);
       setPostalCode(updated.postalCode);
       setCity(updated.city);
       setSaveOk('Saved.');
-      setIsDirty(false);
       router.refresh();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong.');
@@ -293,7 +307,6 @@ export function BuildingDetailClient({
                   value={countryCode}
                   onChange={(e) => {
                     setCountryCode(e.target.value);
-                    setIsDirty(true);
                   }}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                   required
@@ -319,8 +332,8 @@ export function BuildingDetailClient({
                 <input
                   id="name"
                   name="name"
-                  defaultValue={building.name}
-                  onChange={() => setIsDirty(true)}
+                  value={buildingName}
+                  onChange={(e) => setBuildingName(e.target.value)}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                   required
                 />
@@ -339,7 +352,6 @@ export function BuildingDetailClient({
                       setSuggestAnchor('street');
                       setSuppressSuggestions(false);
                       setStreet(e.target.value);
-                      setIsDirty(true);
                     }}
                     onFocus={() => {
                       setSuggestAnchor('street');
@@ -372,7 +384,6 @@ export function BuildingDetailClient({
                             setCity(s.city);
                             setStreetSuggestions([]);
                             setSuppressSuggestions(true);
-                            setIsDirty(true);
                           }}
                         >
                           <div className="truncate">{s.label}</div>
@@ -399,7 +410,6 @@ export function BuildingDetailClient({
                       setSuggestAnchor('houseNumber');
                       setSuppressSuggestions(false);
                       setHouseNumber(e.target.value);
-                      setIsDirty(true);
                     }}
                     onFocus={() => {
                       setSuggestAnchor('houseNumber');
@@ -432,7 +442,6 @@ export function BuildingDetailClient({
                               setCity(s.city);
                               setStreetSuggestions([]);
                             setSuppressSuggestions(true);
-                              setIsDirty(true);
                             }}
                           >
                             <div className="truncate">{s.label}</div>
@@ -459,7 +468,6 @@ export function BuildingDetailClient({
                     value={postalCode}
                     onChange={(e) => {
                       setPostalCode(e.target.value);
-                      setIsDirty(true);
                     }}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     disabled={!countryCode}
@@ -477,7 +485,6 @@ export function BuildingDetailClient({
                     value={city}
                     onChange={(e) => {
                       setCity(e.target.value);
-                      setIsDirty(true);
                     }}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     disabled={!countryCode}
@@ -502,8 +509,8 @@ export function BuildingDetailClient({
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
-                  disabled={isSaving}
+                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
+                  disabled={isSaving || !isDirty}
                 >
                   {isSaving ? 'Saving…' : 'Save changes'}
                 </button>

@@ -31,7 +31,14 @@ export function PropertyDetailClient({
   const [isFormCollapsed, setIsFormCollapsed] = useState(true);
 
   const [property, setProperty] = useState<Property>(initialProperty);
-  const [isDirty, setIsDirty] = useState(false);
+  const [name, setName] = useState(initialProperty.name);
+  const [managementType, setManagementType] = useState<ManagementType>(
+    initialProperty.managementType,
+  );
+  const [managerId, setManagerId] = useState<number>(initialProperty.managerId);
+  const [accountantId, setAccountantId] = useState<number>(
+    initialProperty.accountantId,
+  );
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -47,6 +54,12 @@ export function PropertyDetailClient({
   const accountantLabelById = useMemo(() => {
     return new Map(accountants.map((a) => [a.id, a.name]));
   }, [accountants]);
+
+  const isDirty =
+    name !== property.name ||
+    managementType !== property.managementType ||
+    managerId !== property.managerId ||
+    accountantId !== property.accountantId;
 
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
@@ -71,24 +84,16 @@ export function PropertyDetailClient({
     setIsSaving(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const name = String(formData.get('name') ?? '').trim();
-      const managementType = String(
-        formData.get('managementType') ?? 'WEG',
-      ) as ManagementType;
-      const managerId = Number(formData.get('managerId'));
-      const accountantId = Number(formData.get('accountantId'));
-
-      if (!name) throw new Error('Name is required.');
+      const nextName = name.trim();
+      if (!nextName) throw new Error('Name is required.');
       if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
-      if (!Number.isFinite(accountantId))
-        throw new Error('Accountant is required.');
+      if (!Number.isFinite(accountantId)) throw new Error('Accountant is required.');
 
       const res = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          name,
+          name: nextName,
           managementType,
           managerId,
           accountantId,
@@ -102,8 +107,11 @@ export function PropertyDetailClient({
 
       const updated = (await res.json()) as Property;
       setProperty(updated);
+      setName(updated.name);
+      setManagementType(updated.managementType);
+      setManagerId(updated.managerId);
+      setAccountantId(updated.accountantId);
       setSaveOk('Saved.');
-      setIsDirty(false);
       router.refresh();
     } catch (err) {
       setSaveError(
@@ -253,8 +261,8 @@ export function PropertyDetailClient({
                 <input
                   id="name"
                   name="name"
-                  defaultValue={property.name}
-                  onChange={() => setIsDirty(true)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-700"
                   required
                 />
@@ -272,8 +280,10 @@ export function PropertyDetailClient({
                     id="managementType"
                     name="managementType"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    defaultValue={property.managementType}
-                    onChange={() => setIsDirty(true)}
+                    value={managementType}
+                    onChange={(e) =>
+                      setManagementType(e.target.value as ManagementType)
+                    }
                   >
                     <option value="WEG">WEG</option>
                     <option value="MV">MV</option>
@@ -297,8 +307,8 @@ export function PropertyDetailClient({
                     id="managerId"
                     name="managerId"
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    defaultValue={String(property.managerId)}
-                    onChange={() => setIsDirty(true)}
+                    value={String(managerId)}
+                    onChange={(e) => setManagerId(Number(e.target.value))}
                   >
                     {managers.map((m) => (
                       <option key={m.id} value={String(m.id)}>
@@ -319,8 +329,8 @@ export function PropertyDetailClient({
                     id="accountantId"
                     name="accountantId"
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    defaultValue={String(property.accountantId)}
-                    onChange={() => setIsDirty(true)}
+                    value={String(accountantId)}
+                    onChange={(e) => setAccountantId(Number(e.target.value))}
                   >
                     {accountants.map((a) => (
                       <option key={a.id} value={String(a.id)}>
@@ -347,8 +357,8 @@ export function PropertyDetailClient({
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:opacity-60"
-                  disabled={isSaving}
+                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
+                  disabled={isSaving || !isDirty}
                 >
                   {isSaving ? 'Saving…' : 'Save changes'}
                 </button>
