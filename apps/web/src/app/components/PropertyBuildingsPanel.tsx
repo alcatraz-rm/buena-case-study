@@ -191,10 +191,22 @@ export function PropertyBuildingsPanel({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="h-9 rounded-lg border border-zinc-800 bg-transparent px-3 text-sm text-zinc-200 hover:bg-zinc-900"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
                   onClick={() => router.push(`/properties/${propertyId}/buildings/${b.id}`)}
+                  aria-label="Edit building"
                 >
-                  Edit
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -221,7 +233,7 @@ export function PropertyBuildingsPanel({
             <form onSubmit={onCreateBuilding} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="c-country">
-                  Country
+                  Country<span className="ml-1 text-red-400">*</span>
                 </label>
                 <select
                   id="c-country"
@@ -252,7 +264,7 @@ export function PropertyBuildingsPanel({
 
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="c-name">
-                  Building name
+                  Building name<span className="ml-1 text-red-400">*</span>
                 </label>
                 <input
                   id="c-name"
@@ -266,7 +278,7 @@ export function PropertyBuildingsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-street">
-                    Street
+                    Street<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="c-street"
@@ -324,7 +336,7 @@ export function PropertyBuildingsPanel({
                 </div>
                 <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-houseNumber">
-                    House number
+                    House number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="c-houseNumber"
@@ -386,7 +398,7 @@ export function PropertyBuildingsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-postalCode">
-                    Postal code
+                    Postal code<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="c-postalCode"
@@ -401,7 +413,7 @@ export function PropertyBuildingsPanel({
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-city">
-                    City
+                    City<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="c-city"

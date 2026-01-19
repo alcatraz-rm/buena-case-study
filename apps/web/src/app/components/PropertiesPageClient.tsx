@@ -164,7 +164,7 @@ export function PropertiesPageClient({
             <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="name">
-                  Property name
+                  Property name<span className="ml-1 text-red-400">*</span>
                 </label>
                 <input
                   id="name"
@@ -181,13 +181,14 @@ export function PropertiesPageClient({
                     className="text-sm text-zinc-300"
                     htmlFor="managementType"
                   >
-                    Management type
+                    Management type<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="managementType"
                     name="managementType"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     defaultValue="WEG"
+                    required
                   >
                     <option value="WEG">WEG</option>
                     <option value="MV">MV</option>
@@ -213,7 +214,7 @@ export function PropertiesPageClient({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid min-w-0 gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="managerId">
-                    Manager
+                    Manager<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="managerId"
@@ -238,7 +239,7 @@ export function PropertiesPageClient({
                     className="text-sm text-zinc-300"
                     htmlFor="accountantId"
                   >
-                    Accountant
+                    Accountant<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="accountantId"

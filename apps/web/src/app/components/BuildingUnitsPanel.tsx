@@ -287,12 +287,13 @@ export function BuildingUnitsPanel({
           </button>
         </div>
 
-        <div className="grid grid-cols-12 gap-3 border-b border-zinc-800 bg-zinc-950 px-5 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
+        <div className="grid grid-cols-12 items-center gap-3 border-b border-zinc-800 bg-zinc-950 px-5 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
           <div className="col-span-4">Number</div>
           <div className="col-span-3">Type</div>
           <div className="col-span-2">Floor</div>
           <div className="col-span-1 text-right">Rooms</div>
-          <div className="col-span-2 text-right">Size</div>
+          <div className="col-span-1 text-right">Size</div>
+          <div className="col-span-1 text-right"> </div>
         </div>
 
         <div className="divide-y divide-zinc-900">
@@ -300,23 +301,53 @@ export function BuildingUnitsPanel({
             <button
               key={u.id}
               type="button"
-              className="grid w-full cursor-pointer grid-cols-12 gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
+              className="grid w-full cursor-pointer grid-cols-12 items-center gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
               onClick={() => {
                 setSaveError(null);
                 setDeleteError(null);
                 setEditUnit(u);
               }}
             >
-              <div className="col-span-4 truncate font-medium text-zinc-100">
+              <div className="col-span-4 truncate font-medium leading-none text-zinc-100">
                 {u.number}
               </div>
-              <div className="col-span-3 truncate text-zinc-300">{u.unitType}</div>
-              <div className="col-span-2 truncate text-zinc-300">{u.floor ?? '—'}</div>
-              <div className="col-span-1 text-right tabular-nums text-zinc-300">
+              <div className="col-span-3 truncate leading-none text-zinc-300">
+                {u.unitType}
+              </div>
+              <div className="col-span-2 truncate leading-none text-zinc-300">
+                {u.floor ?? '—'}
+              </div>
+              <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
                 {u.rooms ?? '—'}
               </div>
-              <div className="col-span-2 text-right tabular-nums text-zinc-300">
+              <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
                 {u.sizeSqm ?? '—'}
+              </div>
+              <div className="col-span-1 flex items-center justify-end">
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
+                  aria-label="Edit unit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSaveError(null);
+                    setDeleteError(null);
+                    setEditUnit(u);
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
               </div>
             </button>
           ))}
@@ -343,7 +374,7 @@ export function BuildingUnitsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-number">
-                    Unit number
+                    Unit number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="c-number"
@@ -356,13 +387,14 @@ export function BuildingUnitsPanel({
 
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-unitType">
-                    Type
+                    Type<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="c-unitType"
                     name="unitType"
                     defaultValue="Apartment"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    required
                   >
                     <option value="Apartment">Apartment</option>
                     <option value="Office">Office</option>
@@ -374,7 +406,7 @@ export function BuildingUnitsPanel({
 
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="c-description">
-                  Description (optional)
+                  Description
                 </label>
                 <textarea
                   id="c-description"
@@ -388,7 +420,7 @@ export function BuildingUnitsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-floor">
-                    Floor (optional)
+                    Floor
                   </label>
                   <input
                     id="c-floor"
@@ -399,7 +431,7 @@ export function BuildingUnitsPanel({
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-entrance">
-                    Entrance (optional)
+                    Entrance
                   </label>
                   <input
                     id="c-entrance"
@@ -413,7 +445,7 @@ export function BuildingUnitsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-sizeSqm">
-                    Size (sqm, optional)
+                    Size (sqm)
                   </label>
                   <input
                     id="c-sizeSqm"
@@ -425,7 +457,7 @@ export function BuildingUnitsPanel({
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="c-rooms">
-                    Rooms (optional)
+                    Rooms
                   </label>
                   <input
                     id="c-rooms"
@@ -443,7 +475,7 @@ export function BuildingUnitsPanel({
                     className="text-sm text-zinc-300"
                     htmlFor="c-constructionYear"
                   >
-                    Construction year (optional)
+                    Construction year
                   </label>
                   <input
                     id="c-constructionYear"
@@ -458,7 +490,7 @@ export function BuildingUnitsPanel({
                     className="text-sm text-zinc-300"
                     htmlFor="c-coOwnershipShare"
                   >
-                    Co-ownership share (optional)
+                    Co-ownership share
                   </label>
                   <input
                     id="c-coOwnershipShare"
@@ -505,21 +537,13 @@ export function BuildingUnitsPanel({
                 <h2 className="text-base font-semibold">Edit unit</h2>
                 <p className="text-xs text-zinc-400">Update unit details.</p>
               </div>
-
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
-                onClick={() => setEditUnit(null)}
-              >
-                Close
-              </button>
             </div>
 
             <form onSubmit={onSave} className="flex flex-col gap-4 px-5 py-4">
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-number">
-                    Unit number
+                    Unit number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="e-number"
@@ -537,7 +561,7 @@ export function BuildingUnitsPanel({
 
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-unitType">
-                    Type
+                    Type<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="e-unitType"
@@ -554,6 +578,7 @@ export function BuildingUnitsPanel({
                       )
                     }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                    required
                   >
                     <option value="Apartment">Apartment</option>
                     <option value="Office">Office</option>
@@ -565,7 +590,7 @@ export function BuildingUnitsPanel({
 
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="e-description">
-                  Description (optional)
+                  Description
                 </label>
                 <textarea
                   id="e-description"
@@ -585,7 +610,7 @@ export function BuildingUnitsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-floor">
-                    Floor (optional)
+                    Floor
                   </label>
                   <input
                     id="e-floor"
@@ -602,7 +627,7 @@ export function BuildingUnitsPanel({
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-entrance">
-                    Entrance (optional)
+                    Entrance
                   </label>
                   <input
                     id="e-entrance"
@@ -622,7 +647,7 @@ export function BuildingUnitsPanel({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-sizeSqm">
-                    Size (sqm, optional)
+                    Size (sqm)
                   </label>
                   <input
                     id="e-sizeSqm"
@@ -640,7 +665,7 @@ export function BuildingUnitsPanel({
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="e-rooms">
-                    Rooms (optional)
+                    Rooms
                   </label>
                   <input
                     id="e-rooms"
@@ -664,7 +689,7 @@ export function BuildingUnitsPanel({
                     className="text-sm text-zinc-300"
                     htmlFor="e-constructionYear"
                   >
-                    Construction year (optional)
+                    Construction year
                   </label>
                   <input
                     id="e-constructionYear"
@@ -687,7 +712,7 @@ export function BuildingUnitsPanel({
                     className="text-sm text-zinc-300"
                     htmlFor="e-coOwnershipShare"
                   >
-                    Co-ownership share (optional)
+                    Co-ownership share
                   </label>
                   <input
                     id="e-coOwnershipShare"
@@ -715,11 +740,30 @@ export function BuildingUnitsPanel({
               <div className="flex items-center justify-between gap-3 pt-2">
                 <button
                   type="button"
-                  className="h-10 rounded-lg border border-red-900/50 bg-transparent px-4 text-sm text-red-200 hover:bg-red-950/40 disabled:opacity-60"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-900/50 bg-transparent text-red-200 hover:bg-red-950/40 disabled:opacity-60"
                   onClick={onDeleteUnit}
                   disabled={isDeleting}
+                  aria-label={isDeleting ? 'Deleting unit…' : 'Delete unit'}
                 >
-                  {isDeleting ? 'Deleting…' : 'Delete'}
+                  {isDeleting ? (
+                    <span className="text-xs">…</span>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 16h10l1-16" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                    </svg>
+                  )}
                 </button>
 
                 <div className="flex items-center gap-3">

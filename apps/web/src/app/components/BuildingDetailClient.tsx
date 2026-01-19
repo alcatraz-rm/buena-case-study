@@ -232,11 +232,30 @@ export function BuildingDetailClient({
             )}
             <button
               type="button"
-              className="h-10 rounded-lg border border-red-900/50 bg-transparent px-4 text-sm text-red-200 hover:bg-red-950/40 disabled:opacity-60"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-900/50 bg-transparent text-red-200 hover:bg-red-950/40 disabled:opacity-60"
               onClick={onDelete}
               disabled={isDeleting}
+              aria-label={isDeleting ? 'Deleting building…' : 'Delete building'}
             >
-              {isDeleting ? 'Deleting…' : 'Delete'}
+              {isDeleting ? (
+                <span className="text-xs">…</span>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M6 6l1 16h10l1-16" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              )}
             </button>
           </div>
         </header>
@@ -299,7 +318,7 @@ export function BuildingDetailClient({
             >
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="country">
-                  Country
+                  Country<span className="ml-1 text-red-400">*</span>
                 </label>
                 <select
                   id="country"
@@ -327,7 +346,7 @@ export function BuildingDetailClient({
 
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="name">
-                  Building name
+                  Building name<span className="ml-1 text-red-400">*</span>
                 </label>
                 <input
                   id="name"
@@ -342,7 +361,7 @@ export function BuildingDetailClient({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="street">
-                    Street
+                    Street<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="street"
@@ -400,7 +419,7 @@ export function BuildingDetailClient({
 
                 <div className="relative flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="houseNumber">
-                    House number
+                    House number<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="houseNumber"
@@ -460,7 +479,7 @@ export function BuildingDetailClient({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="postalCode">
-                    Postal code
+                    Postal code<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="postalCode"
@@ -477,7 +496,7 @@ export function BuildingDetailClient({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="city">
-                    City
+                    City<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
                     id="city"

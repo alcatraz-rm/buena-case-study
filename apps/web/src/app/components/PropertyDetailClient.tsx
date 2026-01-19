@@ -187,11 +187,30 @@ export function PropertyDetailClient({
             )}
             <button
               type="button"
-              className="h-10 rounded-lg border border-red-900/50 bg-transparent px-4 text-sm text-red-200 hover:bg-red-950/40 disabled:opacity-60"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-900/50 bg-transparent text-red-200 hover:bg-red-950/40 disabled:opacity-60"
               onClick={onDelete}
               disabled={isDeleting}
+              aria-label={isDeleting ? 'Deleting property…' : 'Delete property'}
             >
-              {isDeleting ? 'Deleting…' : 'Delete'}
+              {isDeleting ? (
+                <span className="text-xs">…</span>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M6 6l1 16h10l1-16" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              )}
             </button>
           </div>
         </header>
@@ -256,7 +275,7 @@ export function PropertyDetailClient({
             >
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="name">
-                  Property name
+                  Property name<span className="ml-1 text-red-400">*</span>
                 </label>
                 <input
                   id="name"
@@ -274,7 +293,7 @@ export function PropertyDetailClient({
                     className="text-sm text-zinc-300"
                     htmlFor="managementType"
                   >
-                    Management type
+                    Management type<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="managementType"
@@ -284,6 +303,7 @@ export function PropertyDetailClient({
                     onChange={(e) =>
                       setManagementType(e.target.value as ManagementType)
                     }
+                    required
                   >
                     <option value="WEG">WEG</option>
                     <option value="MV">MV</option>
@@ -301,7 +321,7 @@ export function PropertyDetailClient({
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid min-w-0 gap-2">
                   <label className="text-sm text-zinc-300" htmlFor="managerId">
-                    Manager
+                    Manager<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="managerId"
@@ -309,6 +329,7 @@ export function PropertyDetailClient({
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     value={String(managerId)}
                     onChange={(e) => setManagerId(Number(e.target.value))}
+                    required
                   >
                     {managers.map((m) => (
                       <option key={m.id} value={String(m.id)}>
@@ -323,7 +344,7 @@ export function PropertyDetailClient({
                     className="text-sm text-zinc-300"
                     htmlFor="accountantId"
                   >
-                    Accountant
+                    Accountant<span className="ml-1 text-red-400">*</span>
                   </label>
                   <select
                     id="accountantId"
@@ -331,6 +352,7 @@ export function PropertyDetailClient({
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     value={String(accountantId)}
                     onChange={(e) => setAccountantId(Number(e.target.value))}
+                    required
                   >
                     {accountants.map((a) => (
                       <option key={a.id} value={String(a.id)}>
