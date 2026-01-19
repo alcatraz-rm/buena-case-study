@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
+import { KyselyModule } from '../kysely/kysely.module';
+import { StoredFileModule } from '../stored-file/stored-file.module';
 import { PropertyController } from './property.controller';
 import { PropertyService } from './property.service';
-import { KyselyModule } from '../kysely/kysely.module';
-import { StoredFileService } from '../stored-file/stored-file.service';
 
 @Module({
   controllers: [PropertyController],
-  providers: [PropertyService, StoredFileService],
+  providers: [PropertyService],
   exports: [PropertyService],
-  imports: [KyselyModule],
+  imports: [KyselyModule, StoredFileModule],
 })
 export class PropertyModule {}
