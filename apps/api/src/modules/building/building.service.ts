@@ -24,10 +24,10 @@ export class BuildingService {
     let query = this.kysely.db
       .selectFrom('building')
       .selectAll()
-      .where('deletedAt', 'is', null);
+      .where('building.deletedAt', 'is', null);
 
     if (propertyId !== undefined) {
-      query = query.where('propertyId', '=', propertyId);
+      query = query.where('building.propertyId', '=', propertyId);
     }
 
     return await query.execute();
@@ -37,8 +37,8 @@ export class BuildingService {
     const building = await this.kysely.db
       .selectFrom('building')
       .selectAll()
-      .where('id', '=', id)
-      .where('deletedAt', 'is', null)
+      .where('building.id', '=', id)
+      .where('building.deletedAt', 'is', null)
       .executeTakeFirst();
 
     if (!building) {
@@ -56,9 +56,9 @@ export class BuildingService {
     const result = await this.kysely.db
       .updateTable('building')
       .set(dto)
-      .where('id', '=', id)
-      .where('propertyId', '=', propertyId)
-      .where('deletedAt', 'is', null)
+      .where('building.id', '=', id)
+      .where('building.propertyId', '=', propertyId)
+      .where('building.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 
@@ -73,9 +73,9 @@ export class BuildingService {
     const result = await this.kysely.db
       .updateTable('building')
       .set({ deletedAt: new Date() })
-      .where('id', '=', id)
-      .where('propertyId', '=', propertyId)
-      .where('deletedAt', 'is', null)
+      .where('building.id', '=', id)
+      .where('building.propertyId', '=', propertyId)
+      .where('building.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 

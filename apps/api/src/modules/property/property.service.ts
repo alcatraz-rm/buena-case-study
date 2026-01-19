@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Property } from '../kysely/database';
 import { KyselyService } from '../kysely/kysely.service';
-import type { CreatePropertyDto, UpdatePropertyDto } from './types';
+import type {
+  CreatePropertyDto,
+  PropertyListItem,
+  UpdatePropertyDto,
+} from './types';
 
 @Injectable()
 export class PropertyService {
@@ -17,11 +21,20 @@ export class PropertyService {
     return created;
   }
 
-  async findAll(): Promise<Property[]> {
+  async findAll(): Promise<PropertyListItem[]> {
     return await this.kysely.db
       .selectFrom('property')
-      .selectAll()
-      .where('deletedAt', 'is', null)
+      .leftJoin('building', (join) =>
+        join
+          .onRef('building.propertyId', '=', 'property.id')
+          .on('building.deletedAt', 'is', null),
+      )
+      .selectAll('property')
+      .select((eb) =>
+        eb.fn.count('building.id').$castTo<number>().as('buildingCount'),
+      )
+      .where('property.deletedAt', 'is', null)
+      .groupBy('property.id')
       .execute();
   }
 
@@ -29,8 +42,8 @@ export class PropertyService {
     const property = await this.kysely.db
       .selectFrom('property')
       .selectAll()
-      .where('id', '=', id)
-      .where('deletedAt', 'is', null)
+      .where('property.id', '=', id)
+      .where('property.deletedAt', 'is', null)
       .executeTakeFirst();
 
     if (!property) {
@@ -44,8 +57,8 @@ export class PropertyService {
     const result = await this.kysely.db
       .updateTable('property')
       .set(dto)
-      .where('id', '=', id)
-      .where('deletedAt', 'is', null)
+      .where('property.id', '=', id)
+      .where('property.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 
@@ -60,8 +73,8 @@ export class PropertyService {
     const result = await this.kysely.db
       .updateTable('property')
       .set({ deletedAt: new Date() })
-      .where('id', '=', id)
-      .where('deletedAt', 'is', null)
+      .where('property.id', '=', id)
+      .where('property.deletedAt', 'is', null)
       .returningAll()
       .executeTakeFirst();
 
