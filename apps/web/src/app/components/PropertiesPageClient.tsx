@@ -28,7 +28,9 @@ export function PropertiesPageClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(null);
+  const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(
+    null,
+  );
 
   const managerLabelById = useMemo(() => {
     return new Map(managers.map((m) => [m.id, m.name]));
@@ -57,8 +59,7 @@ export function PropertiesPageClient({
       const managerId = Number(formData.get('managerId'));
       const accountantId = Number(formData.get('accountantId'));
       const file = formData.get('file');
-      const selectedFile =
-        file instanceof File && file.size > 0 ? file : null;
+      const selectedFile = file instanceof File && file.size > 0 ? file : null;
 
       if (!name) throw new Error('Name is required.');
       if (!Number.isFinite(managerId)) throw new Error('Manager is required.');

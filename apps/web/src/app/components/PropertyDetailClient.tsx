@@ -36,7 +36,8 @@ export function PropertyDetailClient({
     sizeBytes: number;
   } | null>(null);
   const [isDeclarationLoading, setIsDeclarationLoading] = useState(false);
-  const [isDeclarationDownloading, setIsDeclarationDownloading] = useState(false);
+  const [isDeclarationDownloading, setIsDeclarationDownloading] =
+    useState(false);
   const [isDeclarationRemoving, setIsDeclarationRemoving] = useState(false);
   const [isDeclarationUploading, setIsDeclarationUploading] = useState(false);
   const [name, setName] = useState(initialProperty.name);
@@ -461,7 +462,9 @@ export function PropertyDetailClient({
                 </div>
 
                 <div className="grid min-w-0 gap-2">
-                  <label className="text-sm text-zinc-300">Declaration of division</label>
+                  <label className="text-sm text-zinc-300">
+                    Declaration of division
+                  </label>
                   <div className="flex h-10 items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-3">
                     <div className="min-w-0 truncate text-sm text-zinc-400">
                       {property.declarationOfDivisionFileId
@@ -510,7 +513,9 @@ export function PropertyDetailClient({
                             type="button"
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-900/50 bg-zinc-950 text-red-200 hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-30"
                             aria-label="Remove file"
-                            disabled={isDeclarationRemoving || isDeclarationUploading}
+                            disabled={
+                              isDeclarationRemoving || isDeclarationUploading
+                            }
                             onClick={() => void removeDeclarationOfDivision()}
                           >
                             {isDeclarationRemoving ? (
@@ -548,7 +553,9 @@ export function PropertyDetailClient({
                         <input
                           type="file"
                           className="hidden"
-                          disabled={isDeclarationUploading || isDeclarationRemoving}
+                          disabled={
+                            isDeclarationUploading || isDeclarationRemoving
+                          }
                           onChange={(e) => {
                             const f = e.currentTarget.files?.[0] ?? null;
                             e.currentTarget.value = '';
