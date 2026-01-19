@@ -13,17 +13,12 @@ async function getJson<T>(url: string): Promise<T> {
 
 export default async function PropertyPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ propertyId: string }>;
-  searchParams?: Promise<{ tab?: string }>;
 }) {
   const { propertyId } = await params;
   const id = Number(propertyId);
   if (!Number.isFinite(id)) notFound();
-
-  const sp = (await searchParams) ?? {};
-  const initialTab = sp.tab === 'buildings' ? 'buildings' : 'details';
 
   const apiBaseUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
@@ -50,7 +45,6 @@ export default async function PropertyPage({
       buildings={buildings}
       managers={managers}
       accountants={accountants}
-      initialTab={initialTab}
     />
   );
 }

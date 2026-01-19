@@ -18,10 +18,7 @@ type Props = {
   buildings: Building[];
   managers: PersonOption[];
   accountants: PersonOption[];
-  initialTab?: Tab;
 };
-
-type Tab = 'details' | 'buildings';
 
 export function PropertyDetailClient({
   apiBaseUrl,
@@ -29,15 +26,11 @@ export function PropertyDetailClient({
   buildings: initialBuildings,
   managers,
   accountants,
-  initialTab,
 }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>(initialTab ?? 'details');
+  const [isFormCollapsed, setIsFormCollapsed] = useState(false);
 
   const [property, setProperty] = useState<Property>(initialProperty);
-  const [buildingCount, setBuildingCount] = useState<number>(
-    initialBuildings.length,
-  );
   const [isDirty, setIsDirty] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -201,43 +194,58 @@ export function PropertyDetailClient({
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className={[
-              'h-9 rounded-lg border px-3 text-sm',
-              tab === 'details'
-                ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
-                : 'border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900/50',
-            ].join(' ')}
-            onClick={() => setTab('details')}
-          >
-            Details
-          </button>
-          <button
-            type="button"
-            className={[
-              'h-9 rounded-lg border px-3 text-sm',
-              tab === 'buildings'
-                ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
-                : 'border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900/50',
-            ].join(' ')}
-            onClick={() => setTab('buildings')}
-          >
-            Buildings ({buildingCount})
-          </button>
-        </div>
-
-        {tab === 'details' && (
-          <section className="overflow-hidden rounded-xl border border-zinc-800">
-            <div className="border-b border-zinc-800 bg-zinc-900 px-5 py-4">
+        <section className="overflow-hidden rounded-xl border border-zinc-800">
+          <div className="flex items-start justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-5 py-4">
+            <div className="flex min-w-0 flex-col gap-1">
               <h2 className="text-sm font-medium text-zinc-200">Basic info</h2>
-              <p className="mt-1 text-xs text-zinc-400">
-                Edit property name, management type, and assignments.
+              <p className="text-xs text-zinc-400">
+                {property.managementType} · Manager:{' '}
+                {managerLabelById.get(property.managerId) ??
+                  `#${property.managerId}`}{' '}
+                · Accountant:{' '}
+                {accountantLabelById.get(property.accountantId) ??
+                  `#${property.accountantId}`}
               </p>
             </div>
 
-            <form onSubmit={onSave} className="flex flex-col gap-4 px-5 py-4">
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100 hover:bg-zinc-800"
+              aria-label={isFormCollapsed ? 'Expand basic info' : 'Collapse basic info'}
+              aria-expanded={!isFormCollapsed}
+              onClick={() => setIsFormCollapsed((v) => !v)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={[
+                  'h-4 w-4 transition-transform duration-200',
+                  isFormCollapsed ? 'rotate-0' : 'rotate-180',
+                ].join(' ')}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            className={[
+              'overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out',
+              isFormCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1200px] opacity-100',
+            ].join(' ')}
+            aria-hidden={isFormCollapsed}
+          >
+            <form
+              onSubmit={onSave}
+              className={[
+                'flex flex-col gap-4 px-5 py-4',
+                isFormCollapsed ? 'pointer-events-none' : '',
+              ].join(' ')}
+            >
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="name">
                   Property name
@@ -346,17 +354,14 @@ export function PropertyDetailClient({
                 </button>
               </div>
             </form>
-          </section>
-        )}
+          </div>
+        </section>
 
-        {tab === 'buildings' && (
-          <PropertyBuildingsPanel
-            apiBaseUrl={apiBaseUrl}
-            propertyId={property.id}
-            initialBuildings={initialBuildings}
-            onCountChange={setBuildingCount}
-          />
-        )}
+        <PropertyBuildingsPanel
+          apiBaseUrl={apiBaseUrl}
+          propertyId={property.id}
+          initialBuildings={initialBuildings}
+        />
       </div>
     </div>
   );
