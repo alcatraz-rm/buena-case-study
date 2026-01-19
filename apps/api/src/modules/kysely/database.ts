@@ -25,7 +25,7 @@ export interface PropertyTable extends BaseTable {
   accountantId: number;
 
   // Teilungserklärung file id
-  declarationOfDivisionFileId: number | null;
+  declarationOfDivisionFileId: string | null;
 }
 
 export type Property = Selectable<PropertyTable>;
@@ -57,7 +57,11 @@ export interface BuildingUnitTable extends BaseTable {
 
 export type BuildingUnit = Selectable<BuildingUnitTable>;
 
-export interface StoredFileTable extends BaseTable {
+export interface StoredFileTable {
+  id: Generated<string>;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
+  deletedAt: Generated<Date | null>;
   originalName: string;
   mimeType: string;
   sizeBytes: number;

@@ -65,7 +65,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('accountantId', 'integer', (col) =>
       col.references('accountant.id').onDelete('restrict').notNull(),
     )
-    .addColumn('declarationOfDivisionFileId', 'integer')
+    .addColumn('declarationOfDivisionFileId', 'uuid')
     .execute();
 
   await db.schema

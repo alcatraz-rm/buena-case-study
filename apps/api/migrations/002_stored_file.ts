@@ -3,7 +3,12 @@ import { Kysely, sql } from 'kysely';
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable('storedFile')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('id', 'uuid', (col) =>
+      col
+        .primaryKey()
+        .notNull()
+        .defaultTo(sql`gen_random_uuid()`),
+    )
     .addColumn('createdAt', 'timestamptz', (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
@@ -37,4 +42,3 @@ export async function down(db: Kysely<unknown>): Promise<void> {
 
   await db.schema.dropTable('storedFile').ifExists().execute();
 }
-
