@@ -209,7 +209,7 @@ export function BuildingUnitsPanel({
             <button
               key={u.id}
               type="button"
-              className="grid w-full grid-cols-12 gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
+              className="grid w-full cursor-pointer grid-cols-12 gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
               onClick={() => {
                 setSaveError(null);
                 setDeleteError(null);

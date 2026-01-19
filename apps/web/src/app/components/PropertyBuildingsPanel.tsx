@@ -176,19 +176,17 @@ export function PropertyBuildingsPanel({
               key={b.id}
               className="flex flex-col gap-2 px-5 py-4 hover:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="min-w-0">
+              <Link
+                href={`/properties/${propertyId}/buildings/${b.id}`}
+                className="min-w-0 flex-1 rounded-lg p-1 -m-1 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
+              >
                 <div className="truncate text-sm font-medium text-zinc-100">
-                  <Link
-                    href={`/properties/${propertyId}/buildings/${b.id}`}
-                    className="hover:underline"
-                  >
-                    {b.name}
-                  </Link>
+                  {b.name}
                 </div>
                 <div className="mt-1 truncate text-xs text-zinc-400">
                   {b.street} {b.houseNumber}, {b.postalCode} {b.city}, {b.country}
                 </div>
-              </div>
+              </Link>
 
               <div className="flex items-center gap-2">
                 <button

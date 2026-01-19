@@ -28,7 +28,7 @@ export function PropertyDetailClient({
   accountants,
 }: Props) {
   const router = useRouter();
-  const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [isFormCollapsed, setIsFormCollapsed] = useState(true);
 
   const [property, setProperty] = useState<Property>(initialProperty);
   const [isDirty, setIsDirty] = useState(false);

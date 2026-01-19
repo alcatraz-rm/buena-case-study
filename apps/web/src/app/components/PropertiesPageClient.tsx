@@ -117,14 +117,12 @@ export function PropertiesPageClient({
                 key={p.id}
                 className="grid grid-cols-12 gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
               >
-                <div className="col-span-5 truncate font-medium text-zinc-100">
-                  <Link
-                    href={`/properties/${p.id}`}
-                    className="hover:underline"
-                  >
-                    {p.name}
-                  </Link>
-                </div>
+                <Link
+                  href={`/properties/${p.id}`}
+                  className="col-span-5 min-w-0 rounded-lg p-1 -m-1 font-medium text-zinc-100 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
+                >
+                  <div className="truncate">{p.name}</div>
+                </Link>
                 <div className="col-span-2 text-zinc-300">
                   {p.managementType}
                 </div>

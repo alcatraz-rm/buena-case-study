@@ -8,8 +8,6 @@ import { suggestAddresses } from '../lib/geocode';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BuildingUnitsPanel } from './BuildingUnitsPanel';
 
-type Tab = 'details' | 'units';
-
 type Props = {
   apiBaseUrl: string;
   property: Property;
@@ -24,11 +22,10 @@ export function BuildingDetailClient({
   units,
 }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('details');
+  const [isFormCollapsed, setIsFormCollapsed] = useState(true);
 
   const [building, setBuilding] = useState<Building>(initialBuilding);
   const [unitsState, setUnitsState] = useState<Unit[]>(units);
-  const [unitCount, setUnitCount] = useState<number>(units.length);
   const [isDirty, setIsDirty] = useState(false);
 
   const [countryCode, setCountryCode] = useState<string>(initialBuilding.country);
@@ -236,41 +233,56 @@ export function BuildingDetailClient({
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className={[
-              'h-9 rounded-lg border px-3 text-sm',
-              tab === 'details'
-                ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
-                : 'border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900/50',
-            ].join(' ')}
-            onClick={() => setTab('details')}
-          >
-            Details
-          </button>
-          <button
-            type="button"
-            className={[
-              'h-9 rounded-lg border px-3 text-sm',
-              tab === 'units'
-                ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
-                : 'border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900/50',
-            ].join(' ')}
-            onClick={() => setTab('units')}
-          >
-            Units ({unitCount})
-          </button>
-        </div>
-
-        {tab === 'details' && (
-          <section className="overflow-hidden rounded-xl border border-zinc-800">
-            <div className="border-b border-zinc-800 bg-zinc-900 px-5 py-4">
+        <section className="overflow-hidden rounded-xl border border-zinc-800">
+          <div className="flex items-start justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-5 py-4">
+            <div className="flex min-w-0 flex-col gap-1">
               <h2 className="text-sm font-medium text-zinc-200">Basic info</h2>
-              <p className="mt-1 text-xs text-zinc-400">Edit building details.</p>
+              <p className="text-xs text-zinc-400">
+                {building.street} {building.houseNumber}, {building.postalCode}{' '}
+                {building.city}, {building.country}
+              </p>
             </div>
 
-            <form onSubmit={onSave} className="flex flex-col gap-4 px-5 py-4">
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100 hover:bg-zinc-800"
+              aria-label={
+                isFormCollapsed ? 'Expand basic info' : 'Collapse basic info'
+              }
+              aria-expanded={!isFormCollapsed}
+              onClick={() => setIsFormCollapsed((v) => !v)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={[
+                  'h-4 w-4 transition-transform duration-200',
+                  isFormCollapsed ? 'rotate-0' : 'rotate-180',
+                ].join(' ')}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            className={[
+              'overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out',
+              isFormCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1600px] opacity-100',
+            ].join(' ')}
+            aria-hidden={isFormCollapsed}
+          >
+            <form
+              onSubmit={onSave}
+              className={[
+                'flex flex-col gap-4 px-5 py-4',
+                isFormCollapsed ? 'pointer-events-none' : '',
+              ].join(' ')}
+            >
               <div className="grid gap-2">
                 <label className="text-sm text-zinc-300" htmlFor="country">
                   Country
@@ -497,18 +509,15 @@ export function BuildingDetailClient({
                 </button>
               </div>
             </form>
-          </section>
-        )}
+          </div>
+        </section>
 
-        {tab === 'units' && (
-          <BuildingUnitsPanel
-            apiBaseUrl={apiBaseUrl}
-            buildingId={building.id}
-            initialUnits={unitsState}
-            onCountChange={setUnitCount}
-            onUnitsChange={setUnitsState}
-          />
-        )}
+        <BuildingUnitsPanel
+          apiBaseUrl={apiBaseUrl}
+          buildingId={building.id}
+          initialUnits={unitsState}
+          onUnitsChange={setUnitsState}
+        />
       </div>
     </div>
   );
