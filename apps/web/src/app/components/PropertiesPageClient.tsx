@@ -28,6 +28,9 @@ export function PropertiesPageClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(
+    null,
+  );
 
   const managerLabelById = useMemo(() => {
     return new Map(managers.map((m) => [m.id, m.name]));
@@ -55,31 +58,60 @@ export function PropertiesPageClient({
       ) as ManagementType;
       const managerId = Number(formData.get('managerId'));
       const accountantId = Number(formData.get('accountantId'));
+      const file = formData.get('file');
+      const selectedFile = file instanceof File && file.size > 0 ? file : null;
 
       if (!name) throw new Error('Name is required.');
       if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
       if (!Number.isFinite(accountantId))
         throw new Error('Accountant is required.');
 
-      const res = await fetch(`${apiBaseUrl}/properties`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          managementType,
-          managerId,
-          accountantId,
-        } satisfies CreatePropertyDto),
-      });
+      let propertyId = createdPropertyId;
+      if (propertyId === null) {
+        const res = await fetch(`${apiBaseUrl}/properties`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            managementType,
+            managerId,
+            accountantId,
+          } satisfies CreatePropertyDto),
+        });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to create property (${res.status})`);
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || `Failed to create property (${res.status})`);
+        }
+
+        const created = (await res.json()) as Property;
+        propertyId = created.id;
+        setCreatedPropertyId(propertyId);
       }
 
-      const created = (await res.json()) as Property;
+      if (selectedFile) {
+        const upload = new FormData();
+        upload.append('file', selectedFile);
+
+        const res = await fetch(
+          `${apiBaseUrl}/properties/${propertyId}/declaration-of-division`,
+          {
+            method: 'POST',
+            body: upload,
+          },
+        );
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(
+            text ||
+              `Property created, but file upload failed (${res.status}). You can retry without creating a new property.`,
+          );
+        }
+      }
+
       setIsOpen(false);
-      void created;
+      setCreatedPropertyId(null);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
@@ -298,7 +330,11 @@ export function PropertiesPageClient({
                 <button
                   type="button"
                   className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setCreatedPropertyId(null);
+                    setError(null);
+                  }}
                   disabled={isSubmitting}
                 >
                   Cancel

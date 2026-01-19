@@ -27,6 +27,7 @@
     "kysely": "^0.28.10",
     "kysely-ctl": "^0.20.0",
     "kysely-postgres-js": "^3.0.0",
+    "multer": "^2.0.2",
     "nestjs-zod": "^5.1.1",
     "postgres": "^3.4.8",
     "reflect-metadata": "^0.2.2",

@@ -8,6 +8,7 @@ import { GeocodeModule } from './modules/geocode/geocode.module';
 import { KyselyModule } from './modules/kysely/kysely.module';
 import { ManagerModule } from './modules/manager/manager.module';
 import { PropertyModule } from './modules/property/property.module';
+import { StoredFileModule } from './modules/stored-file/stored-file.module';
 import { UnitModule } from './modules/unit/unit.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { UnitModule } from './modules/unit/unit.module';
     PropertyModule,
     BuildingModule,
     UnitModule,
+    StoredFileModule,
   ],
   controllers: [],
   providers: [

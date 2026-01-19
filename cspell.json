@@ -35,6 +35,8 @@
     "Sonnenallee",
     "timestamptz",
     "Zippopotam",
-    "addressdetails"
+    "addressdetails",
+    "Streamable",
+    "bytea"
   ]
 }

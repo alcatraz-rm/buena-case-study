@@ -10,7 +10,9 @@ export const TCreateProperty = z.object({
   accountantId: z.number().int().positive(),
 });
 
-export const TUpdateProperty = TCreateProperty.partial();
+export const TUpdateProperty = TCreateProperty.partial().extend({
+  declarationOfDivisionFileId: z.uuid().nullable().optional(),
+});
 
 export type CreatePropertyDto = z.infer<typeof TCreateProperty>;
 export type UpdatePropertyDto = z.infer<typeof TUpdateProperty>;
@@ -28,6 +30,7 @@ export type Property = {
   managementType: ManagementType;
   managerId: number;
   accountantId: number;
+  declarationOfDivisionFileId: string | null;
   createdAt: string;
   updatedAt: string;
 };
