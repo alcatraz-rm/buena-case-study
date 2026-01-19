@@ -104,38 +104,60 @@ export function PropertiesPageClient({
         </header>
 
         <section className="overflow-hidden rounded-xl border border-zinc-800">
-          <div className="grid grid-cols-12 gap-3 border-b border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
-            <div className="col-span-5">Name</div>
+          <div className="grid grid-cols-12 items-center gap-3 border-b border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-medium uppercase tracking-wider text-zinc-400">
+            <div className="col-span-4">Name</div>
             <div className="col-span-2">Type</div>
             <div className="col-span-2">Manager</div>
             <div className="col-span-2">Accountant</div>
             <div className="col-span-1 text-right">Buildings</div>
+            <div className="col-span-1 text-right"> </div>
           </div>
 
           <div className="divide-y divide-zinc-900">
             {properties.map((p) => (
               <div
                 key={p.id}
-                className="grid grid-cols-12 gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
+                className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
               >
                 <Link
                   href={`/properties/${p.id}`}
-                  className="col-span-5 min-w-0 rounded-lg p-1 -m-1 font-medium text-zinc-100 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
+                  className="col-span-4 min-w-0 rounded-lg p-1 -m-1 font-medium leading-none text-zinc-100 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
                 >
                   <div className="truncate">{p.name}</div>
                 </Link>
-                <div className="col-span-2 text-zinc-300">
+                <div className="col-span-2 leading-none text-zinc-300">
                   {p.managementType}
                 </div>
-                <div className="col-span-2 truncate text-zinc-300">
+                <div className="col-span-2 truncate leading-none text-zinc-300">
                   {managerLabelById.get(p.managerId) ?? `#${p.managerId}`}
                 </div>
-                <div className="col-span-2 truncate text-zinc-300">
+                <div className="col-span-2 truncate leading-none text-zinc-300">
                   {accountantLabelById.get(p.accountantId) ??
                     `#${p.accountantId}`}
                 </div>
-                <div className="col-span-1 text-right tabular-nums text-zinc-300">
+                <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
                   {p.buildingCount}
+                </div>
+                <div className="col-span-1 flex items-center justify-end">
+                  <button
+                    type="button"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
+                    aria-label="Edit property"
+                    onClick={() => router.push(`/properties/${p.id}`)}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
