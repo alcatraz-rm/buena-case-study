@@ -65,10 +65,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('accountantId', 'integer', (col) =>
       col.references('accountant.id').onDelete('restrict').notNull(),
     )
-    .addColumn('declarationOfDivisionFileUrl', 'text')
-    .addColumn('declarationOfDivisionFileName', 'text')
-    .addColumn('declarationOfDivisionMimeType', 'text')
-    .addColumn('declarationOfDivisionUploadedAt', 'timestamptz')
+    .addColumn('declarationOfDivisionFileId', 'integer')
     .execute();
 
   await db.schema

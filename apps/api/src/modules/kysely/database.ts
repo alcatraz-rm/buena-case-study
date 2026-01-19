@@ -24,11 +24,8 @@ export interface PropertyTable extends BaseTable {
   managerId: number;
   accountantId: number;
 
-  // Teilungserklärung (declaration of division) upload metadata.
-  declarationOfDivisionFileUrl: string | null;
-  declarationOfDivisionFileName: string | null;
-  declarationOfDivisionMimeType: string | null;
-  declarationOfDivisionUploadedAt: Date | null;
+  // Teilungserklärung file id
+  declarationOfDivisionFileId: number | null;
 }
 
 export type Property = Selectable<PropertyTable>;
@@ -60,9 +57,19 @@ export interface BuildingUnitTable extends BaseTable {
 
 export type BuildingUnit = Selectable<BuildingUnitTable>;
 
+export interface StoredFileTable extends BaseTable {
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  content: Uint8Array;
+}
+
+export type StoredFile = Selectable<StoredFileTable>;
+
 export interface Database {
   manager: ManagerTable;
   accountant: AccountantTable;
+  storedFile: StoredFileTable;
   property: PropertyTable;
   building: BuildingTable;
   buildingUnit: BuildingUnitTable;
