@@ -1,9 +1,9 @@
 import type { PersonOption, PropertyListItem } from '@buena/shared';
 import { PropertiesPageClient } from './components/PropertiesPageClient';
+import { getApiBaseUrlForClient, getApiBaseUrlForServer } from './lib/api-base-url';
 
 async function getProperties(): Promise<PropertyListItem[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl = getApiBaseUrlForServer();
   const res = await fetch(`${baseUrl}/properties`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -14,8 +14,7 @@ async function getProperties(): Promise<PropertyListItem[]> {
 }
 
 async function getManagers(): Promise<PersonOption[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl = getApiBaseUrlForServer();
   const res = await fetch(`${baseUrl}/managers`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -26,8 +25,7 @@ async function getManagers(): Promise<PersonOption[]> {
 }
 
 async function getAccountants(): Promise<PersonOption[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const baseUrl = getApiBaseUrlForServer();
   const res = await fetch(`${baseUrl}/accountants`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -43,8 +41,7 @@ export default async function Home() {
     getManagers(),
     getAccountants(),
   ]);
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const apiBaseUrl = getApiBaseUrlForClient();
   return (
     <PropertiesPageClient
       properties={properties}

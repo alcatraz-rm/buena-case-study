@@ -14,8 +14,7 @@ import { UnitModule } from './modules/unit/unit.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.local', '.env'],
-      // validate: validateEnv,
+      envFilePath: ['.env.local', '.env', '../../.env'],
     }),
     KyselyModule,
     ManagerModule,
