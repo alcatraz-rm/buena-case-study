@@ -1,7 +1,10 @@
 import type { Building, PersonOption, Property } from '@buena/shared';
 import { notFound } from 'next/navigation';
 import { PropertyDetailClient } from '../../components/PropertyDetailClient';
-import { getApiBaseUrlForClient, getApiBaseUrlForServer } from '../../lib/api-base-url';
+import {
+  getApiBaseUrlForClient,
+  getApiBaseUrlForServer,
+} from '../../lib/api-base-url';
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });

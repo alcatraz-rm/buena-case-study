@@ -6,11 +6,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: buena
     ports:
-      - "5432:5432"
+      - '6543:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d buena"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d buena']
       interval: 2s
       timeout: 2s
       retries: 30
@@ -41,12 +41,12 @@ services:
     env_file:
       - ./.env
     environment:
-      PORT: "3001"
+      PORT: '3001'
       DATABASE_URL: postgres://postgres:postgres@db:5432/buena
       PNPM_STORE_DIR: /pnpm-store
-      CHOKIDAR_USEPOLLING: "1"
+      CHOKIDAR_USEPOLLING: '1'
     ports:
-      - "3001:3001"
+      - '3001:3001'
     volumes:
       - .:/workspace:delegated
       - pnpm_store:/pnpm-store
@@ -54,6 +54,15 @@ services:
       - api_node_modules:/workspace/apps/api/node_modules
       - shared_node_modules:/workspace/packages/shared/node_modules
     command: sh -lc "corepack enable && pnpm -C apps/api kysely migrate:latest && pnpm -C apps/api kysely seed:run && pnpm -C apps/api dev"
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "require(''http'').get(''http://localhost:3001/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 60
     restart: unless-stopped
 
   web:
@@ -63,16 +72,16 @@ services:
       pnpm-install:
         condition: service_completed_successfully
       api:
-        condition: service_started
+        condition: service_healthy
     environment:
       PNPM_STORE_DIR: /pnpm-store
-      NEXT_TELEMETRY_DISABLED: "1"
-      CHOKIDAR_USEPOLLING: "1"
-      WATCHPACK_POLLING: "true"
+      NEXT_TELEMETRY_DISABLED: '1'
+      CHOKIDAR_USEPOLLING: '1'
+      WATCHPACK_POLLING: 'true'
       NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
       API_BASE_URL_INTERNAL: http://api:3001
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - .:/workspace:delegated
       - pnpm_store:/pnpm-store
@@ -89,4 +98,3 @@ volumes:
   api_node_modules:
   web_node_modules:
   shared_node_modules:
-

@@ -1,6 +1,9 @@
 import type { PersonOption, PropertyListItem } from '@buena/shared';
 import { PropertiesPageClient } from './components/PropertiesPageClient';
-import { getApiBaseUrlForClient, getApiBaseUrlForServer } from './lib/api-base-url';
+import {
+  getApiBaseUrlForClient,
+  getApiBaseUrlForServer,
+} from './lib/api-base-url';
 
 async function getProperties(): Promise<PropertyListItem[]> {
   const baseUrl = getApiBaseUrlForServer();
