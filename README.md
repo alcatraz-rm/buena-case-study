@@ -7,11 +7,11 @@
 - **SQL access**: Kysely (+ `kysely-ctl` for migrations/seeds)
 - **Shared types**: `@buena/shared` (Zod schemas + inferred TS types)
 
-### Quick start (recommended: Docker)
+### Quick start
 Prereqs:
 - **Docker Desktop** (or `docker` + `docker compose`)
 
-Create a backend env file (Compose expects it to exist):
+Create a backend env file:
 
 ```bash
 cp .env.example .env
@@ -38,7 +38,7 @@ Stop:
 docker compose down
 ```
 
-### Local dev (without Docker)
+### Local dev
 Prereqs:
 - Node.js + pnpm
 - Postgres running locally
