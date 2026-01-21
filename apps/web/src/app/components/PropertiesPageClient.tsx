@@ -18,6 +18,8 @@ type Props = {
   accountants: PersonOption[];
 };
 
+type FeatureFlags = { openAiEnabled: boolean };
+
 export function PropertiesPageClient({
   properties,
   apiBaseUrl,
@@ -26,6 +28,10 @@ export function PropertiesPageClient({
 }: Props) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [createStep, setCreateStep] = useState<'loading' | 'choose' | 'manual'>(
+    'manual',
+  );
+  const [openAiEnabled, setOpenAiEnabled] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(
@@ -43,6 +49,31 @@ export function PropertiesPageClient({
   const countLabel = useMemo(() => {
     return `${properties.length} ${properties.length === 1 ? 'property' : 'properties'}`;
   }, [properties.length]);
+
+  async function openCreateProperty() {
+    setError(null);
+    setCreatedPropertyId(null);
+    setIsOpen(true);
+
+    if (openAiEnabled === null) {
+      setCreateStep('loading');
+      try {
+        const res = await fetch(`${apiBaseUrl}/feature-flags`, {
+          cache: 'no-store',
+        });
+        if (!res.ok) throw new Error('Failed to fetch feature flags');
+        const flags = (await res.json()) as FeatureFlags;
+        setOpenAiEnabled(flags.openAiEnabled);
+        setCreateStep(flags.openAiEnabled ? 'choose' : 'manual');
+      } catch {
+        setOpenAiEnabled(false);
+        setCreateStep('manual');
+      }
+      return;
+    }
+
+    setCreateStep(openAiEnabled ? 'choose' : 'manual');
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -135,7 +166,7 @@ export function PropertiesPageClient({
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
             aria-label="Add property"
-            onClick={() => setIsOpen(true)}
+            onClick={openCreateProperty}
           >
             +
           </button>
@@ -203,134 +234,194 @@ export function PropertiesPageClient({
               </div>
             </div>
 
-            <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
-              <div className="grid gap-2">
-                <label className="text-sm text-zinc-300" htmlFor="name">
-                  Property name<span className="ml-1 text-red-400">*</span>
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-700"
-                  placeholder="e.g. Sonnenallee 12"
-                  required
-                />
-              </div>
+            {createStep === 'loading' && (
+              <div className="px-5 py-10 text-sm text-zinc-300">Loading…</div>
+            )}
 
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid min-w-0 gap-2">
-                  <label
-                    className="text-sm text-zinc-300"
-                    htmlFor="managementType"
+            {createStep === 'choose' && (
+              <div className="flex flex-col gap-4 px-5 py-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-left hover:bg-zinc-800"
+                    onClick={() => setCreateStep('manual')}
                   >
-                    Management type<span className="ml-1 text-red-400">*</span>
-                  </label>
-                  <select
-                    id="managementType"
-                    name="managementType"
-                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    defaultValue="WEG"
-                    required
+                    <div className="text-sm font-medium text-zinc-100">
+                      Create manually
+                    </div>
+                    <div className="mt-1 text-xs text-zinc-400">
+                      Fill out the form and optionally attach a file.
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="cursor-not-allowed rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-left opacity-60"
                   >
-                    <option value="WEG">WEG</option>
-                    <option value="MV">MV</option>
-                  </select>
+                    <div className="text-sm font-medium text-zinc-100">
+                      Upload declaration of division
+                    </div>
+                    <div className="mt-1 text-xs text-zinc-400">
+                      AI will analyze it and prefill entities. (Coming soon)
+                    </div>
+                  </button>
                 </div>
 
-                <div className="grid min-w-0 gap-2">
-                  <label
-                    className="truncate text-sm text-zinc-300"
-                    htmlFor="file"
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setCreatedPropertyId(null);
+                      setError(null);
+                      setCreateStep('manual');
+                    }}
                   >
-                    Teilungserklärung
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {createStep === 'manual' && (
+              <form
+                onSubmit={onSubmit}
+                className="flex flex-col gap-4 px-5 py-4"
+              >
+                <div className="grid gap-2">
+                  <label className="text-sm text-zinc-300" htmlFor="name">
+                    Property name<span className="ml-1 text-red-400">*</span>
                   </label>
                   <input
-                    id="file"
-                    name="file"
-                    type="file"
-                    className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-0 text-sm text-zinc-300 file:mr-3 file:my-1 file:h-8 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:text-xs file:font-medium file:text-zinc-100 hover:file:bg-zinc-700"
+                    id="name"
+                    name="name"
+                    className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-700"
+                    placeholder="e.g. Sonnenallee 12"
+                    required
                   />
                 </div>
-              </div>
 
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="grid min-w-0 gap-2">
-                  <label className="text-sm text-zinc-300" htmlFor="managerId">
-                    Manager<span className="ml-1 text-red-400">*</span>
-                  </label>
-                  <select
-                    id="managerId"
-                    name="managerId"
-                    className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select manager…
-                    </option>
-                    {managers.map((m) => (
-                      <option key={m.id} value={String(m.id)}>
-                        {m.name} ({m.email})
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid min-w-0 gap-2">
+                    <label
+                      className="text-sm text-zinc-300"
+                      htmlFor="managementType"
+                    >
+                      Management type
+                      <span className="ml-1 text-red-400">*</span>
+                    </label>
+                    <select
+                      id="managementType"
+                      name="managementType"
+                      className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                      defaultValue="WEG"
+                      required
+                    >
+                      <option value="WEG">WEG</option>
+                      <option value="MV">MV</option>
+                    </select>
+                  </div>
+
+                  <div className="grid min-w-0 gap-2">
+                    <label
+                      className="truncate text-sm text-zinc-300"
+                      htmlFor="file"
+                    >
+                      Teilungserklärung
+                    </label>
+                    <input
+                      id="file"
+                      name="file"
+                      type="file"
+                      className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-0 text-sm text-zinc-300 file:mr-3 file:my-1 file:h-8 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:text-xs file:font-medium file:text-zinc-100 hover:file:bg-zinc-700"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid min-w-0 gap-2">
+                    <label
+                      className="text-sm text-zinc-300"
+                      htmlFor="managerId"
+                    >
+                      Manager<span className="ml-1 text-red-400">*</span>
+                    </label>
+                    <select
+                      id="managerId"
+                      name="managerId"
+                      className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                      required
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Select manager…
                       </option>
-                    ))}
-                  </select>
-                </div>
+                      {managers.map((m) => (
+                        <option key={m.id} value={String(m.id)}>
+                          {m.name} ({m.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="grid min-w-0 gap-2">
-                  <label
-                    className="text-sm text-zinc-300"
-                    htmlFor="accountantId"
-                  >
-                    Accountant<span className="ml-1 text-red-400">*</span>
-                  </label>
-                  <select
-                    id="accountantId"
-                    name="accountantId"
-                    className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
-                    required
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select accountant…
-                    </option>
-                    {accountants.map((a) => (
-                      <option key={a.id} value={String(a.id)}>
-                        {a.name} ({a.email})
+                  <div className="grid min-w-0 gap-2">
+                    <label
+                      className="text-sm text-zinc-300"
+                      htmlFor="accountantId"
+                    >
+                      Accountant<span className="ml-1 text-red-400">*</span>
+                    </label>
+                    <select
+                      id="accountantId"
+                      name="accountantId"
+                      className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
+                      required
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Select accountant…
                       </option>
-                    ))}
-                  </select>
+                      {accountants.map((a) => (
+                        <option key={a.id} value={String(a.id)}>
+                          {a.name} ({a.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              {error && (
-                <div className="rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2 text-sm text-red-200">
-                  {error}
+                {error && (
+                  <div className="rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2 text-sm text-red-200">
+                    {error}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setCreatedPropertyId(null);
+                      setError(null);
+                      setCreateStep('manual');
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Creating…' : 'Create'}
+                  </button>
                 </div>
-              )}
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setCreatedPropertyId(null);
-                    setError(null);
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Creating…' : 'Create'}
-                </button>
-              </div>
-            </form>
+              </form>
+            )}
           </div>
         </div>
       )}

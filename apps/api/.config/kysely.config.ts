@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-config({ path: ['.env.local', '.env'] });
+config({ path: ['.env.local', '.env', '../../.env.local', '../../.env'] });
 
 import { CamelCasePlugin } from 'kysely';
 import { defineConfig } from 'kysely-ctl';

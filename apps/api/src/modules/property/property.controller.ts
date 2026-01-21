@@ -1,3 +1,4 @@
+import { DeclarationOfDivisionExtraction } from '@buena/shared';
 import {
   BadRequestException,
   Body,
@@ -14,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Property } from '../kysely/database';
+import { PdfTextService } from '../pdf-text/pdf-text.service';
 import { StoredFileService } from '../stored-file/stored-file.service';
 import { PropertyService } from './property.service';
 import {
@@ -22,11 +24,18 @@ import {
   UpdatePropertyDto,
 } from './types';
 
+type FileType =
+  | { originalname: string; mimetype: string; size: number; buffer: Buffer }
+  | undefined;
+
+const FILE_SIZE_LIMIT = 10 * 1024 * 1024;
+
 @Controller('properties')
 export class PropertyController {
   constructor(
     private readonly propertyService: PropertyService,
     private readonly storedFileService: StoredFileService,
+    private readonly pdfTextService: PdfTextService,
   ) {}
 
   @Post()
@@ -60,14 +69,12 @@ export class PropertyController {
 
   @Post(':id/declaration-of-division')
   @UseInterceptors(
-    FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),
+    FileInterceptor('file', { limits: { fileSize: FILE_SIZE_LIMIT } }),
   )
   async uploadDeclarationOfDivision(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile()
-    file:
-      | { originalname: string; mimetype: string; size: number; buffer: Buffer }
-      | undefined,
+    file: FileType,
   ): Promise<Property> {
     if (!file) {
       throw new BadRequestException('File is required');
@@ -92,6 +99,25 @@ export class PropertyController {
     }
 
     return updated;
+  }
+
+  @Post('declaration-of-division/analyze')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: FILE_SIZE_LIMIT } }),
+  )
+  async analyzeDeclarationOfDivision(
+    @UploadedFile() file: FileType,
+  ): Promise<DeclarationOfDivisionExtraction> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    if (file.mimetype !== 'application/pdf') {
+      throw new BadRequestException('Only PDF files are supported');
+    }
+
+    return await this.pdfTextService.extractEntitiesFromPdfWithOpenAi(
+      file.buffer,
+    );
   }
 
   @Delete(':id/declaration-of-division')
