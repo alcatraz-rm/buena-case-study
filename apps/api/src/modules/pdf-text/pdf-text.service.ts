@@ -8,4 +8,3 @@ export class PdfTextService {
     return (data.text ?? '').trim();
   }
 }
-

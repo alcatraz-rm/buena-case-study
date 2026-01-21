@@ -11,4 +11,3 @@ export class FeatureFlagsController {
     return { openAiEnabled: key.length > 0 };
   }
 }
-

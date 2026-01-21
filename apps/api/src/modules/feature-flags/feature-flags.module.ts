@@ -7,4 +7,3 @@ import { FeatureFlagsController } from './feature-flags.controller';
   providers: [ConfigService],
 })
 export class FeatureFlagsModule {}
-
