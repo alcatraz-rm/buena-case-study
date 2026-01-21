@@ -30,7 +30,7 @@ Endpoints:
 
 - **Web**: `http://localhost:3000`
 - **API**: `http://localhost:3001`
-- **Postgres**: `localhost:5432` (db: `buena`, user/pass: `postgres`)
+- **Postgres**: `localhost:6543` (db: `buena`, user/pass: `postgres`)
 
 On startup the API runs:
 
