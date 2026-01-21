@@ -200,30 +200,6 @@ export function PropertyBuildingsPanel({
                   {b.country}
                 </div>
               </Link>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
-                  onClick={() =>
-                    router.push(`/properties/${propertyId}/buildings/${b.id}`)
-                  }
-                  aria-label="Edit building"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                  </svg>
-                </button>
-              </div>
             </div>
           ))}
 

@@ -1,6 +1,10 @@
 import type { Building, Property, Unit } from '@buena/shared';
 import { notFound } from 'next/navigation';
 import { BuildingDetailClient } from '../../../../components/BuildingDetailClient';
+import {
+  getApiBaseUrlForClient,
+  getApiBaseUrlForServer,
+} from '../../../../lib/api-base-url';
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });
@@ -21,20 +25,20 @@ export default async function BuildingPage({
   const bid = Number(buildingId);
   if (!Number.isFinite(pid) || !Number.isFinite(bid)) notFound();
 
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const apiBaseUrlServer = getApiBaseUrlForServer();
+  const apiBaseUrlClient = getApiBaseUrlForClient();
 
   const [property, building, units] = await Promise.all([
-    getJson<Property>(`${apiBaseUrl}/properties/${pid}`),
-    getJson<Building>(`${apiBaseUrl}/buildings/${bid}`),
-    getJson<Unit[]>(`${apiBaseUrl}/buildings/${bid}/units`),
+    getJson<Property>(`${apiBaseUrlServer}/properties/${pid}`),
+    getJson<Building>(`${apiBaseUrlServer}/buildings/${bid}`),
+    getJson<Unit[]>(`${apiBaseUrlServer}/buildings/${bid}/units`),
   ]);
 
   if (building.propertyId !== property.id) notFound();
 
   return (
     <BuildingDetailClient
-      apiBaseUrl={apiBaseUrl}
+      apiBaseUrl={apiBaseUrlClient}
       property={property}
       building={building}
       units={units}

@@ -1,6 +1,10 @@
 import type { Building, PersonOption, Property } from '@buena/shared';
 import { notFound } from 'next/navigation';
 import { PropertyDetailClient } from '../../components/PropertyDetailClient';
+import {
+  getApiBaseUrlForClient,
+  getApiBaseUrlForServer,
+} from '../../lib/api-base-url';
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });
@@ -20,12 +24,12 @@ export default async function PropertyPage({
   const id = Number(propertyId);
   if (!Number.isFinite(id)) notFound();
 
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+  const apiBaseUrlServer = getApiBaseUrlForServer();
+  const apiBaseUrlClient = getApiBaseUrlForClient();
 
   let property: Property;
   try {
-    property = await getJson<Property>(`${apiBaseUrl}/properties/${id}`);
+    property = await getJson<Property>(`${apiBaseUrlServer}/properties/${id}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
     if (msg.includes('404')) notFound();
@@ -33,14 +37,14 @@ export default async function PropertyPage({
   }
 
   const [managers, accountants, buildings] = await Promise.all([
-    getJson<PersonOption[]>(`${apiBaseUrl}/managers`),
-    getJson<PersonOption[]>(`${apiBaseUrl}/accountants`),
-    getJson<Building[]>(`${apiBaseUrl}/properties/${id}/buildings`),
+    getJson<PersonOption[]>(`${apiBaseUrlServer}/managers`),
+    getJson<PersonOption[]>(`${apiBaseUrlServer}/accountants`),
+    getJson<Building[]>(`${apiBaseUrlServer}/properties/${id}/buildings`),
   ]);
 
   return (
     <PropertyDetailClient
-      apiBaseUrl={apiBaseUrl}
+      apiBaseUrl={apiBaseUrlClient}
       property={property}
       buildings={buildings}
       managers={managers}

@@ -322,20 +322,28 @@ export function BuildingUnitsPanel({
           <div className="col-span-3">Type</div>
           <div className="col-span-2">Floor</div>
           <div className="col-span-1 text-right">Rooms</div>
-          <div className="col-span-1 text-right">Size</div>
-          <div className="col-span-1 text-right"> </div>
+          <div className="col-span-2 text-right">Size</div>
         </div>
 
         <div className="divide-y divide-zinc-900">
           {units.map((u) => (
-            <button
+            <div
               key={u.id}
-              type="button"
               className="grid w-full cursor-pointer grid-cols-12 items-center gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
               onClick={() => {
                 setSaveError(null);
                 setDeleteError(null);
                 setEditUnit(u);
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSaveError(null);
+                  setDeleteError(null);
+                  setEditUnit(u);
+                }
               }}
             >
               <div className="col-span-4 truncate font-medium leading-none text-zinc-100">
@@ -350,36 +358,10 @@ export function BuildingUnitsPanel({
               <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
                 {u.rooms ?? '—'}
               </div>
-              <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
+              <div className="col-span-2 text-right tabular-nums leading-none text-zinc-300">
                 {u.sizeSqm ?? '—'}
               </div>
-              <div className="col-span-1 flex items-center justify-end">
-                <button
-                  type="button"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-transparent text-zinc-200 hover:bg-zinc-900"
-                  aria-label="Edit unit"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSaveError(null);
-                    setDeleteError(null);
-                    setEditUnit(u);
-                  }}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                  </svg>
-                </button>
-              </div>
-            </button>
+            </div>
           ))}
 
           {units.length === 0 && (

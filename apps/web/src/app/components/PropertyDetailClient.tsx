@@ -658,7 +658,7 @@ export function PropertyDetailClient({
                   className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
                   disabled={isSaving || !isDirty}
                 >
-                  {isSaving ? 'Saving…' : 'Save changes'}
+                  {isSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
             </form>
