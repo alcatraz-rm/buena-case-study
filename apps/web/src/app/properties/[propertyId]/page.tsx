@@ -1,4 +1,4 @@
-import type { Building, PersonOption, Property } from '@buena/shared';
+import type { Building, PersonOption, Property } from '@buena/types';
 import { notFound } from 'next/navigation';
 import { PropertyDetailClient } from '../../components/PropertyDetailClient';
 import {

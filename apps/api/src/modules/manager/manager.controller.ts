@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import type { Manager } from '../kysely/database';
 import { ManagerService } from './manager.service';
+import type { Manager } from './types';
 
 @Controller('managers')
 export class ManagerController {
   constructor(private readonly service: ManagerService) {}
 
   @Get()
-  async findAll(): Promise<Pick<Manager, 'id' | 'name' | 'email'>[]> {
+  async findAll(): Promise<Manager[]> {
     return await this.service.findAll();
   }
 }

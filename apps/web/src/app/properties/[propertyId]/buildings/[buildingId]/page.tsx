@@ -1,4 +1,4 @@
-import type { Building, Property, Unit } from '@buena/shared';
+import type { Building, Property, Unit } from '@buena/types';
 import { notFound } from 'next/navigation';
 import { BuildingDetailClient } from '../../../../components/BuildingDetailClient';
 import {
@@ -30,7 +30,7 @@ export default async function BuildingPage({
 
   const [property, building, units] = await Promise.all([
     getJson<Property>(`${apiBaseUrlServer}/properties/${pid}`),
-    getJson<Building>(`${apiBaseUrlServer}/buildings/${bid}`),
+    getJson<Building>(`${apiBaseUrlServer}/properties/${pid}/buildings/${bid}`),
     getJson<Unit[]>(`${apiBaseUrlServer}/buildings/${bid}/units`),
   ]);
 

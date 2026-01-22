@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -25,6 +26,18 @@ export class PropertyBuildingsController {
     @Param('propertyId', ParseIntPipe) propertyId: number,
   ): Promise<Building[]> {
     return await this.buildingService.findAll(propertyId);
+  }
+
+  @Get(':buildingId')
+  async findOne(
+    @Param('propertyId', ParseIntPipe) propertyId: number,
+    @Param('buildingId', ParseIntPipe) buildingId: number,
+  ): Promise<Building> {
+    const building = await this.buildingService.findOne(buildingId);
+    if (building.propertyId !== propertyId) {
+      throw new NotFoundException('Building not found');
+    }
+    return building;
   }
 
   @Post()

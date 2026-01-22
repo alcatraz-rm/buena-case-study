@@ -1,6 +1,6 @@
 'use client';
 
-import type { AddressSuggestion, Building } from '@buena/shared';
+import type { AddressSuggestion, Building } from '@buena/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -67,11 +67,11 @@ export function PropertyBuildingsPanel({
     setIsCreateSuggesting(true);
 
     const t = window.setTimeout(async () => {
-      const q = `${createStreet}${createHouseNumber.trim() ? ` ${createHouseNumber.trim()}` : ''}`;
+      const query = `${createStreet}${createHouseNumber.trim() ? ` ${createHouseNumber.trim()}` : ''}`;
       const suggestions = await suggestAddresses({
         apiBaseUrl,
         countryCode: createCountryCode,
-        q,
+        query,
         signal: controller.signal,
       });
       setCreateStreetSuggestions(suggestions);

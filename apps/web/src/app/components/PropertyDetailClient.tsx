@@ -6,7 +6,7 @@ import type {
   PersonOption,
   Property,
   UpdatePropertyDto,
-} from '@buena/shared';
+} from '@buena/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';

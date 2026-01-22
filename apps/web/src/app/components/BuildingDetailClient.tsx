@@ -1,11 +1,6 @@
 'use client';
 
-import type {
-  AddressSuggestion,
-  Building,
-  Property,
-  Unit,
-} from '@buena/shared';
+import type { AddressSuggestion, Building, Property, Unit } from '@buena/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
@@ -96,11 +91,11 @@ export function BuildingDetailClient({
     setIsStreetSuggesting(true);
 
     const t = window.setTimeout(async () => {
-      const q = `${street}${houseNumber.trim() ? ` ${houseNumber.trim()}` : ''}`;
+      const query = `${street}${houseNumber.trim() ? ` ${houseNumber.trim()}` : ''}`;
       const suggestions = await suggestAddresses({
         apiBaseUrl,
         countryCode,
-        q,
+        query,
         signal: controller.signal,
       });
       setStreetSuggestions(suggestions);

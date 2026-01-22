@@ -1,4 +1,4 @@
-import { TGeocodeAddressQuery } from '@buena/shared';
+import { TGeocodeAddressQuery } from '@buena/types';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
@@ -24,4 +24,4 @@ export class GeocodeAddressQueryDto extends createZodDto(
   TGeocodeAddressQuery,
 ) {}
 
-export type { AddressSuggestion } from '@buena/shared';
+export type { AddressSuggestion } from '@buena/types';

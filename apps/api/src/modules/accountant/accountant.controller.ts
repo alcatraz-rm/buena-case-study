@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import type { Accountant } from '../kysely/database';
 import { AccountantService } from './accountant.service';
+import { Accountant } from './types';
 
 @Controller('accountants')
 export class AccountantController {
   constructor(private readonly service: AccountantService) {}
 
   @Get()
-  async findAll(): Promise<Pick<Accountant, 'id' | 'name' | 'email'>[]> {
+  async findAll(): Promise<Accountant[]> {
     return await this.service.findAll();
   }
 }

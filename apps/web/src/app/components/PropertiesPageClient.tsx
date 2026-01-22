@@ -6,7 +6,7 @@ import type {
   PersonOption,
   Property,
   PropertyListItem,
-} from '@buena/shared';
+} from '@buena/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';

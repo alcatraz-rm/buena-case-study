@@ -1,4 +1,4 @@
-import type { PersonOption, PropertyListItem } from '@buena/shared';
+import type { PersonOption, PropertyListItem } from '@buena/types';
 import { PropertiesPageClient } from './components/PropertiesPageClient';
 import {
   getApiBaseUrlForClient,

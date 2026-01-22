@@ -1,30 +1,21 @@
+import { BuildingUnitType, ManagementType } from '@buena/types';
 import type { Generated, Selectable } from 'kysely';
-
-export type ManagementType = 'WEG' | 'MV';
-
-export type BuildingUnitType = 'Apartment' | 'Office' | 'Garden' | 'Parking';
 
 export interface ManagerTable extends BaseTable {
   name: string;
   email: string;
 }
 
-export type Manager = Selectable<ManagerTable>;
-
 export interface AccountantTable extends BaseTable {
   name: string;
   email: string;
 }
-
-export type Accountant = Selectable<AccountantTable>;
 
 export interface PropertyTable extends BaseTable {
   name: string;
   managementType: ManagementType;
   managerId: number;
   accountantId: number;
-
-  // Teilungserklärung file id
   declarationOfDivisionFileId: string | null;
 }
 

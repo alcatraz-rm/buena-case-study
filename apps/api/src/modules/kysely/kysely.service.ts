@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CamelCasePlugin, Kysely, Transaction } from 'kysely';
+import { CamelCasePlugin, Kysely } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import postgres from 'postgres';
 import { Database } from './database';
@@ -20,16 +20,5 @@ export class KyselyService {
       dialect,
       plugins: [new CamelCasePlugin()],
     });
-  }
-
-  transactionExecute<T>(
-    trx: Transaction<Database> | undefined,
-    callback: (trx: Transaction<Database>) => Promise<T>,
-  ): Promise<T> {
-    if (trx) {
-      return callback(trx);
-    }
-
-    return this.db.transaction().execute(callback);
   }
 }

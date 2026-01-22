@@ -5,15 +5,12 @@ import { GeocodeAddressQueryDto } from './types';
 
 @Controller('geocode')
 export class GeocodeController {
-  constructor(private readonly service: GeocodeService) {}
+  constructor(private readonly geocodeService: GeocodeService) {}
 
   @Get('addresses')
   async addresses(
     @Query() query: GeocodeAddressQueryDto,
   ): Promise<AddressSuggestion[]> {
-    return await this.service.suggestAddresses({
-      q: query.q,
-      countryCode: query.countryCode,
-    });
+    return await this.geocodeService.suggestAddresses(query);
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import type { BuildingUnitType, Unit } from '@buena/shared';
+import type { BuildingUnitType, Unit } from '@buena/types';
 import { useEffect, useState } from 'react';
 
 type Props = {
