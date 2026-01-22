@@ -14,9 +14,15 @@ export async function suggestAddresses(args: {
   url.searchParams.set('query', args.query);
 
   const res = await fetch(url, { cache: 'no-store', signal: args.signal });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    return [];
+  }
 
   const json: unknown = await res.json();
   const parsed = TAddressSuggestionList.safeParse(json);
-  return parsed.success ? parsed.data : [];
+
+  if (!parsed.success) {
+    return [];
+  }
+  return parsed.data;
 }
