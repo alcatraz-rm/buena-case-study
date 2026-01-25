@@ -2,7 +2,11 @@ import {
   DeclarationOfDivisionExtraction,
   DeclarationOfDivisionExtractionSchema,
 } from '@buena/types';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import pdf from 'pdf-parse';
 import { z } from 'zod';
@@ -50,7 +54,7 @@ export class PdfTextService {
     text: string,
   ): Promise<DeclarationOfDivisionExtraction> {
     if (!this.serviceEnabled) {
-      throw new Error('OpenAI service is not enabled');
+      throw new BadRequestException('OpenAI service is not enabled');
     }
 
     const inputText = text.length > MAX_CHARS ? text.slice(0, MAX_CHARS) : text;
