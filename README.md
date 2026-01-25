@@ -8,6 +8,20 @@
 - **SQL access**: Kysely (+ `kysely-ctl` for migrations/seeds)
 - **Shared types**: `@buena/types` (Zod schemas + inferred TS types)
 
+### Scope notes
+
+- **Accountants & managers**: out of scope for the UI, so they are not editable there; demo data includes pre-seeded entities from `seed.ts`.
+- **PDF extraction**: demo-mode only; integrating the full flow requires additional UX/design work to make it usable.
+
+### Walkthrough videos
+
+- [Intro](https://www.loom.com/share/9424745bf0824f5a851be9f9bbac6c93)
+- [Backend stack overview + DB](https://www.loom.com/share/0cd9688e353240bc85d4bf4bc0baa55e)
+- [Backend modules overview](https://www.loom.com/share/dc6e3b52cfcc4c0bbcb37e6e17d1968e)
+- [Frontend overview](https://www.loom.com/share/e3a4b08cec39406687bbf3028974a2f8)
+- [Running the project](https://www.loom.com/share/9bc4aa0b6f194f2f97cee07f619b36ce)
+- [UI demo](https://www.loom.com/share/4be3209bb73f476da15f3f4216ad2e56)
+
 ### Quick start
 
 Prereqs:
