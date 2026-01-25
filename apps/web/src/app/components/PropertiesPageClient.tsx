@@ -28,15 +28,19 @@ export function PropertiesPageClient({
 }: Props) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [createStep, setCreateStep] = useState<'loading' | 'choose' | 'manual'>(
-    'manual',
-  );
+  const [createStep, setCreateStep] = useState<
+    'loading' | 'choose' | 'manual' | 'ai-demo'
+  >('manual');
   const [openAiEnabled, setOpenAiEnabled] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(
     null,
   );
+  const [aiDemoFile, setAiDemoFile] = useState<File | null>(null);
+  const [aiDemoIsAnalyzing, setAiDemoIsAnalyzing] = useState(false);
+  const [aiDemoError, setAiDemoError] = useState<string | null>(null);
+  const [aiDemoResult, setAiDemoResult] = useState<unknown | null>(null);
 
   const managerLabelById = useMemo(() => {
     return new Map(managers.map((m) => [m.id, m.name]));
@@ -53,6 +57,10 @@ export function PropertiesPageClient({
   async function openCreateProperty() {
     setError(null);
     setCreatedPropertyId(null);
+    setAiDemoFile(null);
+    setAiDemoIsAnalyzing(false);
+    setAiDemoError(null);
+    setAiDemoResult(null);
     setIsOpen(true);
 
     if (openAiEnabled === null) {
@@ -76,6 +84,47 @@ export function PropertiesPageClient({
     }
 
     setCreateStep(openAiEnabled ? 'choose' : 'manual');
+  }
+
+  async function analyzeDeclarationOfDivisionDemo() {
+    setAiDemoError(null);
+    setAiDemoResult(null);
+
+    if (!openAiEnabled) {
+      setAiDemoError('OpenAI is not enabled on the backend.');
+      return;
+    }
+
+    if (!aiDemoFile) {
+      setAiDemoError('Please choose a PDF file.');
+      return;
+    }
+
+    setAiDemoIsAnalyzing(true);
+    try {
+      const upload = new FormData();
+      upload.append('file', aiDemoFile);
+
+      const response = await fetch(
+        `${apiBaseUrl}/properties/declaration-of-division/analyze`,
+        {
+          method: 'POST',
+          body: upload,
+        },
+      );
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Analyze failed (${response.status})`);
+      }
+
+      const parsed = (await response.json()) as unknown;
+      setAiDemoResult(parsed);
+    } catch (err) {
+      setAiDemoError(err instanceof Error ? err.message : 'Analyze failed.');
+    } finally {
+      setAiDemoIsAnalyzing(false);
+    }
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -268,13 +317,14 @@ export function PropertiesPageClient({
 
                   <button
                     type="button"
-                    className="cursor-not-allowed rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-left opacity-60"
+                    className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-left hover:bg-zinc-800"
+                    onClick={() => setCreateStep('ai-demo')}
                   >
                     <div className="text-sm font-medium text-zinc-100">
                       Upload declaration of division
                     </div>
                     <div className="mt-1 text-xs text-zinc-400">
-                      AI will analyze it and prefill entities. (Coming soon)
+                      Demo: analyze PDF on backend and show extracted JSON.
                     </div>
                   </button>
                 </div>
@@ -288,10 +338,107 @@ export function PropertiesPageClient({
                       setCreatedPropertyId(null);
                       setError(null);
                       setCreateStep('manual');
+                      setAiDemoFile(null);
+                      setAiDemoIsAnalyzing(false);
+                      setAiDemoError(null);
+                      setAiDemoResult(null);
                     }}
                   >
                     Cancel
                   </button>
+                </div>
+              </div>
+            )}
+
+            {createStep === 'ai-demo' && (
+              <div className="flex flex-col gap-4 px-5 py-4">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                  <div className="text-sm font-medium text-zinc-100">
+                    Declaration of division parsing (demo)
+                  </div>
+                  <div className="mt-1 text-xs text-zinc-400">
+                    Upload a PDF. The backend will extract text, call OpenAI,
+                    and return structured JSON.
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-sm text-zinc-300" htmlFor="aiDemoFile">
+                    PDF file
+                  </label>
+                  <input
+                    id="aiDemoFile"
+                    type="file"
+                    accept="application/pdf"
+                    className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-0 text-sm text-zinc-300 file:mr-3 file:my-1 file:h-8 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:text-xs file:font-medium file:text-zinc-100 hover:file:bg-zinc-700"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0] ?? null;
+                      setAiDemoFile(file);
+                    }}
+                  />
+                </div>
+
+                {aiDemoError && (
+                  <div className="rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2 text-sm text-red-200">
+                    {aiDemoError}
+                  </div>
+                )}
+
+                {aiDemoResult !== null && (
+                  <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+                    <div className="border-b border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-medium uppercase tracking-wider text-zinc-400">
+                      Parsed JSON
+                    </div>
+                    <pre className="max-h-[50vh] overflow-auto p-4 text-xs leading-relaxed text-zinc-200">
+                      {JSON.stringify(aiDemoResult, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  <button
+                    type="button"
+                    className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
+                    onClick={() => {
+                      setCreateStep('choose');
+                      setAiDemoFile(null);
+                      setAiDemoIsAnalyzing(false);
+                      setAiDemoError(null);
+                      setAiDemoResult(null);
+                    }}
+                    disabled={aiDemoIsAnalyzing}
+                  >
+                    Back
+                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      className="h-10 rounded-lg border border-zinc-800 bg-transparent px-4 text-sm text-zinc-200 hover:bg-zinc-900"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setCreatedPropertyId(null);
+                        setError(null);
+                        setCreateStep('manual');
+                        setAiDemoFile(null);
+                        setAiDemoIsAnalyzing(false);
+                        setAiDemoError(null);
+                        setAiDemoResult(null);
+                      }}
+                      disabled={aiDemoIsAnalyzing}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      className="h-10 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-950 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30"
+                      onClick={analyzeDeclarationOfDivisionDemo}
+                      disabled={aiDemoIsAnalyzing || !aiDemoFile}
+                    >
+                      {aiDemoIsAnalyzing ? 'Analyzing…' : 'Analyze'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -421,6 +568,10 @@ export function PropertiesPageClient({
                       setCreatedPropertyId(null);
                       setError(null);
                       setCreateStep('manual');
+                      setAiDemoFile(null);
+                      setAiDemoIsAnalyzing(false);
+                      setAiDemoError(null);
+                      setAiDemoResult(null);
                     }}
                     disabled={isSubmitting}
                   >
