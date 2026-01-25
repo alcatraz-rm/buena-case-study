@@ -6,7 +6,6 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('property').ifExists().execute();
   await db.schema.dropTable('accountant').ifExists().execute();
   await db.schema.dropTable('manager').ifExists().execute();
-
   await db.schema.dropType('buildingUnitType').ifExists().execute();
   await db.schema.dropType('managementType').ifExists().execute();
 }

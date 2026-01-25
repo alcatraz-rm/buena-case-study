@@ -1,18 +1,19 @@
-import type { Building, PersonOption, Property } from '@buena/shared';
+import type { Building, PersonOption, Property } from '@buena/types';
 import { notFound } from 'next/navigation';
-import { PropertyDetailClient } from '../../components/PropertyDetailClient';
+import { PropertyDetailClient } from '~/app/components/PropertyDetailClient';
 import {
   getApiBaseUrlForClient,
   getApiBaseUrlForServer,
-} from '../../lib/api-base-url';
+} from '~/app/lib/api-base-url';
 
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `Request failed (${res.status})`);
+  const response = await fetch(url, { cache: 'no-store' });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(text || `Request failed (${response.status})`);
   }
-  return (await res.json()) as T;
+  return (await response.json()) as T;
 }
 
 export default async function PropertyPage({
@@ -22,7 +23,9 @@ export default async function PropertyPage({
 }) {
   const { propertyId } = await params;
   const id = Number(propertyId);
-  if (!Number.isFinite(id)) notFound();
+  if (!Number.isFinite(id)) {
+    notFound();
+  }
 
   const apiBaseUrlServer = getApiBaseUrlForServer();
   const apiBaseUrlClient = getApiBaseUrlForClient();
@@ -32,7 +35,9 @@ export default async function PropertyPage({
     property = await getJson<Property>(`${apiBaseUrlServer}/properties/${id}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
-    if (msg.includes('404')) notFound();
+    if (msg.includes('404')) {
+      notFound();
+    }
     throw err;
   }
 

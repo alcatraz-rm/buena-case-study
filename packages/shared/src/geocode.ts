@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const TGeocodeAddressQuery = z.object({
-  q: z.string().min(2).max(200),
+  query: z.string().min(2).max(200),
   countryCode: z
     .string()
     .min(2)

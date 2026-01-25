@@ -1,4 +1,4 @@
-import { TCreateProperty, TUpdateProperty } from '@buena/shared';
+import { TCreateProperty, TUpdateProperty } from '@buena/types';
 import { createZodDto } from 'nestjs-zod';
 import type { Property } from '../kysely/database';
 

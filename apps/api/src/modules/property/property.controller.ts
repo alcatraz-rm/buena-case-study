@@ -1,4 +1,4 @@
-import { DeclarationOfDivisionExtraction } from '@buena/shared';
+import { DeclarationOfDivisionExtraction } from '@buena/types';
 import {
   BadRequestException,
   Body,

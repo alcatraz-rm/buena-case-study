@@ -1,14 +1,14 @@
 import {
   DeclarationOfDivisionExtraction,
   DeclarationOfDivisionExtractionSchema,
-} from '@buena/shared';
+} from '@buena/types';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import pdf from 'pdf-parse';
 import { z } from 'zod';
 import { buildOpenAiEntityExtractionPrompt } from './openai-extract.prompt';
 
-const OpenAiChatCompletionSchema = z.object({
+const TOpenAiChatCompletion = z.object({
   choices: z
     .array(
       z.object({
@@ -85,7 +85,7 @@ export class PdfTextService {
     }
 
     const rawJson = (await response.json()) as unknown;
-    const openAiParsed = OpenAiChatCompletionSchema.safeParse(rawJson);
+    const openAiParsed = TOpenAiChatCompletion.safeParse(rawJson);
     if (!openAiParsed.success) {
       throw new InternalServerErrorException('Failed to parse OpenAI response');
     }

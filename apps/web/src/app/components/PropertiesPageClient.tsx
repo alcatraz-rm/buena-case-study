@@ -6,7 +6,7 @@ import type {
   PersonOption,
   Property,
   PropertyListItem,
-} from '@buena/shared';
+} from '@buena/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
@@ -58,11 +58,14 @@ export function PropertiesPageClient({
     if (openAiEnabled === null) {
       setCreateStep('loading');
       try {
-        const res = await fetch(`${apiBaseUrl}/feature-flags`, {
+        const response = await fetch(`${apiBaseUrl}/feature-flags`, {
           cache: 'no-store',
         });
-        if (!res.ok) throw new Error('Failed to fetch feature flags');
-        const flags = (await res.json()) as FeatureFlags;
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch feature flags');
+        }
+        const flags = (await response.json()) as FeatureFlags;
         setOpenAiEnabled(flags.openAiEnabled);
         setCreateStep(flags.openAiEnabled ? 'choose' : 'manual');
       } catch {
@@ -92,14 +95,20 @@ export function PropertiesPageClient({
       const file = formData.get('file');
       const selectedFile = file instanceof File && file.size > 0 ? file : null;
 
-      if (!name) throw new Error('Name is required.');
-      if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
-      if (!Number.isFinite(accountantId))
+      if (!name) {
+        throw new Error('Name is required.');
+      }
+      if (!Number.isFinite(managerId)) {
+        throw new Error('Manager is required.');
+      }
+      if (!Number.isFinite(accountantId)) {
         throw new Error('Accountant is required.');
+      }
 
       let propertyId = createdPropertyId;
+
       if (propertyId === null) {
-        const res = await fetch(`${apiBaseUrl}/properties`, {
+        const response = await fetch(`${apiBaseUrl}/properties`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -110,12 +119,14 @@ export function PropertiesPageClient({
           } satisfies CreatePropertyDto),
         });
 
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          throw new Error(text || `Failed to create property (${res.status})`);
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
+          throw new Error(
+            text || `Failed to create property (${response.status})`,
+          );
         }
 
-        const created = (await res.json()) as Property;
+        const created = (await response.json()) as Property;
         propertyId = created.id;
         setCreatedPropertyId(propertyId);
       }
@@ -124,7 +135,7 @@ export function PropertiesPageClient({
         const upload = new FormData();
         upload.append('file', selectedFile);
 
-        const res = await fetch(
+        const response = await fetch(
           `${apiBaseUrl}/properties/${propertyId}/declaration-of-division`,
           {
             method: 'POST',
@@ -132,11 +143,11 @@ export function PropertiesPageClient({
           },
         );
 
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
+        if (!response.ok) {
+          const text = await response.text().catch(() => '');
           throw new Error(
             text ||
-              `Property created, but file upload failed (${res.status}). You can retry without creating a new property.`,
+              `Property created, but file upload failed (${response.status}). You can retry without creating a new property.`,
           );
         }
       }
@@ -183,32 +194,33 @@ export function PropertiesPageClient({
           </div>
 
           <div className="divide-y divide-zinc-900">
-            {properties.map((p) => (
+            {properties.map((property) => (
               <div
-                key={p.id}
+                key={property.id}
                 className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm hover:bg-zinc-900/60"
               >
                 <div className="col-span-1 tabular-nums leading-none text-zinc-400">
-                  {p.id}
+                  {property.id}
                 </div>
                 <Link
-                  href={`/properties/${p.id}`}
+                  href={`/properties/${property.id}`}
                   className="col-span-4 min-w-0 rounded-lg p-1 -m-1 font-medium leading-none text-zinc-100 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
                 >
-                  <div className="truncate">{p.name}</div>
+                  <div className="truncate">{property.name}</div>
                 </Link>
                 <div className="col-span-2 leading-none text-zinc-300">
-                  {p.managementType}
+                  {property.managementType}
                 </div>
                 <div className="col-span-2 truncate leading-none text-zinc-300">
-                  {managerLabelById.get(p.managerId) ?? `#${p.managerId}`}
+                  {managerLabelById.get(property.managerId) ??
+                    `#${property.managerId}`}
                 </div>
                 <div className="col-span-2 truncate leading-none text-zinc-300">
-                  {accountantLabelById.get(p.accountantId) ??
-                    `#${p.accountantId}`}
+                  {accountantLabelById.get(property.accountantId) ??
+                    `#${property.accountantId}`}
                 </div>
                 <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
-                  {p.buildingCount}
+                  {property.buildingCount}
                 </div>
               </div>
             ))}
@@ -357,9 +369,9 @@ export function PropertiesPageClient({
                       <option value="" disabled>
                         Select manager…
                       </option>
-                      {managers.map((m) => (
-                        <option key={m.id} value={String(m.id)}>
-                          {m.name} ({m.email})
+                      {managers.map((manager) => (
+                        <option key={manager.id} value={String(manager.id)}>
+                          {manager.name} ({manager.email})
                         </option>
                       ))}
                     </select>
@@ -382,9 +394,12 @@ export function PropertiesPageClient({
                       <option value="" disabled>
                         Select accountant…
                       </option>
-                      {accountants.map((a) => (
-                        <option key={a.id} value={String(a.id)}>
-                          {a.name} ({a.email})
+                      {accountants.map((accountant) => (
+                        <option
+                          key={accountant.id}
+                          value={String(accountant.id)}
+                        >
+                          {accountant.name} ({accountant.email})
                         </option>
                       ))}
                     </select>

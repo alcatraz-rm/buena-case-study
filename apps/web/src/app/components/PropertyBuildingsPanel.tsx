@@ -1,6 +1,6 @@
 'use client';
 
-import type { AddressSuggestion, Building } from '@buena/shared';
+import type { AddressSuggestion, Building } from '@buena/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -46,20 +46,21 @@ export function PropertyBuildingsPanel({
   const [createHouseNumberFocused, setCreateHouseNumberFocused] =
     useState(false);
 
-  // Building editing happens on the extended building page.
-
   useEffect(() => {
     onCountChange?.(buildings.length);
   }, [buildings.length, onCountChange]);
 
-  // Building editing happens on the extended building page.
-
   useEffect(() => {
-    if (createSuppressSuggestions) return;
-    if (!isCreateBuildingOpen) return;
+    if (createSuppressSuggestions) {
+      return;
+    }
+    if (!isCreateBuildingOpen) {
+      return;
+    }
     if (!createCountryCode || createStreet.trim().length < 3) {
       setCreateStreetSuggestions([]);
       setIsCreateSuggesting(false);
+
       return;
     }
 
@@ -67,11 +68,11 @@ export function PropertyBuildingsPanel({
     setIsCreateSuggesting(true);
 
     const t = window.setTimeout(async () => {
-      const q = `${createStreet}${createHouseNumber.trim() ? ` ${createHouseNumber.trim()}` : ''}`;
+      const query = `${createStreet}${createHouseNumber.trim() ? ` ${createHouseNumber.trim()}` : ''}`;
       const suggestions = await suggestAddresses({
         apiBaseUrl,
         countryCode: createCountryCode,
-        q,
+        query,
         signal: controller.signal,
       });
       setCreateStreetSuggestions(suggestions);
@@ -92,15 +93,13 @@ export function PropertyBuildingsPanel({
     createSuppressSuggestions,
   ]);
 
-  // Building editing happens on the extended building page.
-
-  async function onCreateBuilding(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function onCreateBuilding(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setCreateBuildingError(null);
     setIsBuildingCreating(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
+      const formData = new FormData(event.currentTarget);
 
       const name = String(formData.get('name') ?? '').trim();
       const street = String(formData.get('street') ?? '').trim();
@@ -109,14 +108,26 @@ export function PropertyBuildingsPanel({
       const city = String(formData.get('city') ?? '').trim();
       const country = String(formData.get('country') ?? '').trim();
 
-      if (!name) throw new Error('Building name is required.');
-      if (!street) throw new Error('Street is required.');
-      if (!houseNumber) throw new Error('House number is required.');
-      if (!postalCode) throw new Error('Postal code is required.');
-      if (!city) throw new Error('City is required.');
-      if (!country) throw new Error('Country is required.');
+      if (!name) {
+        throw new Error('Building name is required.');
+      }
+      if (!street) {
+        throw new Error('Street is required.');
+      }
+      if (!houseNumber) {
+        throw new Error('House number is required.');
+      }
+      if (!postalCode) {
+        throw new Error('Postal code is required.');
+      }
+      if (!city) {
+        throw new Error('City is required.');
+      }
+      if (!country) {
+        throw new Error('Country is required.');
+      }
 
-      const res = await fetch(
+      const response = await fetch(
         `${apiBaseUrl}/properties/${propertyId}/buildings`,
         {
           method: 'POST',
@@ -132,12 +143,14 @@ export function PropertyBuildingsPanel({
         },
       );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to create building (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(
+          text || `Failed to create building (${response.status})`,
+        );
       }
 
-      const created = (await res.json()) as Building;
+      const created = (await response.json()) as Building;
       setBuildings((prev) => [created, ...prev]);
       setIsCreateBuildingOpen(false);
       router.refresh();
@@ -183,21 +196,21 @@ export function PropertyBuildingsPanel({
         </div>
 
         <div className="divide-y divide-zinc-900">
-          {buildings.map((b) => (
+          {buildings.map((building) => (
             <div
-              key={b.id}
+              key={building.id}
               className="flex flex-col gap-2 px-5 py-4 hover:bg-zinc-900/40 sm:flex-row sm:items-center sm:justify-between"
             >
               <Link
-                href={`/properties/${propertyId}/buildings/${b.id}`}
+                href={`/properties/${propertyId}/buildings/${building.id}`}
                 className="min-w-0 flex-1 rounded-lg p-1 -m-1 hover:bg-zinc-900/30 focus:outline-none focus:ring-2 focus:ring-zinc-700"
               >
                 <div className="truncate text-sm font-medium text-zinc-100">
-                  {b.name}
+                  {building.name}
                 </div>
                 <div className="mt-1 truncate text-xs text-zinc-400">
-                  {b.street} {b.houseNumber}, {b.postalCode} {b.city},{' '}
-                  {b.country}
+                  {building.street} {building.houseNumber},{' '}
+                  {building.postalCode} {building.city}, {building.country}
                 </div>
               </Link>
             </div>
@@ -235,8 +248,8 @@ export function PropertyBuildingsPanel({
                   id="c-country"
                   name="country"
                   value={createCountryCode}
-                  onChange={(e) => {
-                    setCreateCountryCode(e.target.value);
+                  onChange={(event) => {
+                    setCreateCountryCode(event.target.value);
                   }}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                   required
@@ -244,9 +257,9 @@ export function PropertyBuildingsPanel({
                   <option value="" disabled>
                     Select country…
                   </option>
-                  {COUNTRY_OPTIONS.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.name} ({c.code})
+                  {COUNTRY_OPTIONS.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name} ({country.code})
                     </option>
                   ))}
                 </select>
@@ -280,10 +293,10 @@ export function PropertyBuildingsPanel({
                     id="c-street"
                     name="street"
                     value={createStreet}
-                    onChange={(e) => {
+                    onChange={(event) => {
                       setCreateSuggestAnchor('street');
                       setCreateSuppressSuggestions(false);
-                      setCreateStreet(e.target.value);
+                      setCreateStreet(event.target.value);
                     }}
                     onFocus={() => {
                       setCreateSuggestAnchor('street');
@@ -305,22 +318,22 @@ export function PropertyBuildingsPanel({
                             Searching…
                           </div>
                         )}
-                        {createStreetSuggestions.map((s) => (
+                        {createStreetSuggestions.map((suggestion) => (
                           <button
-                            key={`${s.lat}-${s.lon}`}
+                            key={`${suggestion.lat}-${suggestion.lon}`}
                             type="button"
                             className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setCreateStreet(s.street);
-                              setCreateHouseNumber(s.houseNumber);
-                              setCreatePostalCode(s.postalCode);
-                              setCreateCity(s.city);
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setCreateStreet(suggestion.street);
+                              setCreateHouseNumber(suggestion.houseNumber);
+                              setCreatePostalCode(suggestion.postalCode);
+                              setCreateCity(suggestion.city);
                               setCreateStreetSuggestions([]);
                               setCreateSuppressSuggestions(true);
                             }}
                           >
-                            <div className="truncate">{s.label}</div>
+                            <div className="truncate">{suggestion.label}</div>
                           </button>
                         ))}
                         {!isCreateSuggesting &&
@@ -368,22 +381,22 @@ export function PropertyBuildingsPanel({
                             Searching…
                           </div>
                         )}
-                        {createStreetSuggestions.map((s) => (
+                        {createStreetSuggestions.map((suggestion) => (
                           <button
-                            key={`${s.lat}-${s.lon}`}
+                            key={`${suggestion.lat}-${suggestion.lon}`}
                             type="button"
                             className="w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setCreateStreet(s.street);
-                              setCreateHouseNumber(s.houseNumber);
-                              setCreatePostalCode(s.postalCode);
-                              setCreateCity(s.city);
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setCreateStreet(suggestion.street);
+                              setCreateHouseNumber(suggestion.houseNumber);
+                              setCreatePostalCode(suggestion.postalCode);
+                              setCreateCity(suggestion.city);
                               setCreateStreetSuggestions([]);
                               setCreateSuppressSuggestions(true);
                             }}
                           >
-                            <div className="truncate">{s.label}</div>
+                            <div className="truncate">{suggestion.label}</div>
                           </button>
                         ))}
                         {!isCreateSuggesting &&
@@ -409,7 +422,9 @@ export function PropertyBuildingsPanel({
                     id="c-postalCode"
                     name="postalCode"
                     value={createPostalCode}
-                    onChange={(e) => setCreatePostalCode(e.target.value)}
+                    onChange={(event) =>
+                      setCreatePostalCode(event.target.value)
+                    }
                     disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     placeholder="e.g. 12045"
@@ -424,8 +439,8 @@ export function PropertyBuildingsPanel({
                     id="c-city"
                     name="city"
                     value={createCity}
-                    onChange={(e) => {
-                      setCreateCity(e.target.value);
+                    onChange={(event) => {
+                      setCreateCity(event.target.value);
                     }}
                     disabled={!createCountryCode}
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
@@ -462,8 +477,6 @@ export function PropertyBuildingsPanel({
           </div>
         </div>
       )}
-
-      {/* Building editing happens on the extended building page. */}
     </>
   );
 }

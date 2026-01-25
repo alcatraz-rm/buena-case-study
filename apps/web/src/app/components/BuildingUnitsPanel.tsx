@@ -1,6 +1,6 @@
 'use client';
 
-import type { BuildingUnitType, Unit } from '@buena/shared';
+import type { BuildingUnitType, Unit } from '@buena/types';
 import { useEffect, useState } from 'react';
 
 type Props = {
@@ -72,54 +72,76 @@ export function BuildingUnitsPanel({
   }, [editUnit]);
 
   const isEditDirty = (() => {
-    if (!editUnit || !editDraft) return false;
+    if (!editUnit || !editDraft) {
+      return false;
+    }
     const description = editDraft.description.trim()
       ? editDraft.description.trim()
       : null;
+
     const floor = editDraft.floor.trim() ? editDraft.floor.trim() : null;
+
     const entrance = editDraft.entrance.trim()
       ? editDraft.entrance.trim()
       : null;
 
     const sizeSqmStr = editDraft.sizeSqm.trim();
     const sizeSqm = sizeSqmStr ? Number(sizeSqmStr) : null;
+
     const coOwnershipShare = editDraft.coOwnershipShare.trim()
       ? editDraft.coOwnershipShare.trim()
       : null;
+
     const constructionYearStr = editDraft.constructionYear.trim();
     const constructionYear = constructionYearStr
       ? Number(constructionYearStr)
       : null;
+
     const roomsStr = editDraft.rooms.trim();
     const rooms = roomsStr ? Number(roomsStr) : null;
 
+    const numberChanged = editDraft.number.trim() !== editUnit.number;
+    const unitTypeChanged = editDraft.unitType !== editUnit.unitType;
+    const descriptionChanged = description !== editUnit.description;
+    const floorChanged = floor !== editUnit.floor;
+    const entranceChanged = entrance !== editUnit.entrance;
+    const coOwnershipShareChanged =
+      coOwnershipShare !== editUnit.coOwnershipShare;
+
+    const sizeSqmChanged = sizeSqmStr
+      ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm
+      : editUnit.sizeSqm !== null;
+
+    const constructionYearChanged = constructionYearStr
+      ? Number.isFinite(constructionYear) &&
+        constructionYear !== editUnit.constructionYear
+      : editUnit.constructionYear !== null;
+
+    const roomsChanged = roomsStr
+      ? Number.isFinite(rooms) && rooms !== editUnit.rooms
+      : editUnit.rooms !== null;
+
     return (
-      editDraft.number.trim() !== editUnit.number ||
-      editDraft.unitType !== editUnit.unitType ||
-      description !== editUnit.description ||
-      floor !== editUnit.floor ||
-      entrance !== editUnit.entrance ||
-      (sizeSqmStr
-        ? Number.isFinite(sizeSqm) && sizeSqm !== editUnit.sizeSqm
-        : editUnit.sizeSqm !== null) ||
-      coOwnershipShare !== editUnit.coOwnershipShare ||
-      (constructionYearStr
-        ? Number.isFinite(constructionYear) &&
-          constructionYear !== editUnit.constructionYear
-        : editUnit.constructionYear !== null) ||
-      (roomsStr
-        ? Number.isFinite(rooms) && rooms !== editUnit.rooms
-        : editUnit.rooms !== null)
+      numberChanged ||
+      unitTypeChanged ||
+      descriptionChanged ||
+      floorChanged ||
+      entranceChanged ||
+      sizeSqmChanged ||
+      coOwnershipShareChanged ||
+      constructionYearChanged ||
+      roomsChanged
     );
   })();
 
-  async function onCreate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function onCreate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setCreateError(null);
     setIsCreating(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
+      const formData = new FormData(event.currentTarget);
+
       const unitType = String(
         formData.get('unitType') ?? 'Apartment',
       ) as BuildingUnitType;
@@ -141,11 +163,11 @@ export function BuildingUnitsPanel({
       const payload = {
         unitType,
         number,
-        description: descriptionRaw ? descriptionRaw : null,
-        floor: floorRaw ? floorRaw : null,
-        entrance: entranceRaw ? entranceRaw : null,
+        description: descriptionRaw ?? null,
+        floor: floorRaw ?? null,
+        entrance: entranceRaw ?? null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
-        coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
+        coOwnershipShare: coOwnershipShareRaw ?? null,
         constructionYear: constructionYearRaw
           ? Number(constructionYearRaw)
           : null,
@@ -155,28 +177,33 @@ export function BuildingUnitsPanel({
       if (payload.sizeSqm !== null && !Number.isFinite(payload.sizeSqm)) {
         throw new Error('Size must be a number.');
       }
+
       if (
         payload.constructionYear !== null &&
         !Number.isFinite(payload.constructionYear)
       ) {
         throw new Error('Construction year must be a number.');
       }
+
       if (payload.rooms !== null && !Number.isFinite(payload.rooms)) {
         throw new Error('Rooms must be a number.');
       }
 
-      const res = await fetch(`${apiBaseUrl}/buildings/${buildingId}/units`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${apiBaseUrl}/buildings/${buildingId}/units`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+      );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to create unit (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to create unit (${response.status})`);
       }
 
-      const created = (await res.json()) as Unit;
+      const created = (await response.json()) as Unit;
       setUnits((prev) => [created, ...prev]);
       setIsCreateOpen(false);
     } catch (err) {
@@ -188,9 +215,11 @@ export function BuildingUnitsPanel({
     }
   }
 
-  async function onSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!editUnit || !editDraft) return;
+  async function onSave(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editUnit || !editDraft) {
+      return;
+    }
 
     setSaveError(null);
     setIsSaving(true);
@@ -206,16 +235,18 @@ export function BuildingUnitsPanel({
       const constructionYearRaw = editDraft.constructionYear.trim();
       const roomsRaw = editDraft.rooms.trim();
 
-      if (!number) throw new Error('Unit number is required.');
+      if (!number) {
+        throw new Error('Unit number is required.');
+      }
 
       const payload = {
         unitType,
         number,
-        description: descriptionRaw ? descriptionRaw : null,
-        floor: floorRaw ? floorRaw : null,
-        entrance: entranceRaw ? entranceRaw : null,
+        description: descriptionRaw ?? null,
+        floor: floorRaw ?? null,
+        entrance: entranceRaw ?? null,
         sizeSqm: sizeSqmRaw ? Number(sizeSqmRaw) : null,
-        coOwnershipShare: coOwnershipShareRaw ? coOwnershipShareRaw : null,
+        coOwnershipShare: coOwnershipShareRaw ?? null,
         constructionYear: constructionYearRaw
           ? Number(constructionYearRaw)
           : null,
@@ -235,7 +266,7 @@ export function BuildingUnitsPanel({
         throw new Error('Rooms must be a number.');
       }
 
-      const res = await fetch(
+      const response = await fetch(
         `${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`,
         {
           method: 'PATCH',
@@ -244,12 +275,12 @@ export function BuildingUnitsPanel({
         },
       );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to save unit (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to save unit (${response.status})`);
       }
 
-      const updated = (await res.json()) as Unit;
+      const updated = (await response.json()) as Unit;
       setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
       setEditUnit(null);
     } catch (err) {
@@ -262,24 +293,28 @@ export function BuildingUnitsPanel({
   }
 
   async function onDeleteUnit() {
-    if (!editUnit) return;
+    if (!editUnit) {
+      return;
+    }
     setDeleteError(null);
     setIsDeleting(true);
 
     try {
       const ok = window.confirm('Delete this unit?');
-      if (!ok) return;
+      if (!ok) {
+        return;
+      }
 
-      const res = await fetch(
+      const response = await fetch(
         `${apiBaseUrl}/buildings/${buildingId}/units/${editUnit.id}`,
         {
           method: 'DELETE',
         },
       );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to delete unit (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to delete unit (${response.status})`);
       }
 
       setUnits((prev) => prev.filter((u) => u.id !== editUnit.id));
@@ -326,40 +361,40 @@ export function BuildingUnitsPanel({
         </div>
 
         <div className="divide-y divide-zinc-900">
-          {units.map((u) => (
+          {units.map((unit) => (
             <div
-              key={u.id}
+              key={unit.id}
               className="grid w-full cursor-pointer grid-cols-12 items-center gap-3 px-5 py-3 text-left text-sm hover:bg-zinc-900/40"
               onClick={() => {
                 setSaveError(null);
                 setDeleteError(null);
-                setEditUnit(u);
+                setEditUnit(unit);
               }}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
                   setSaveError(null);
                   setDeleteError(null);
-                  setEditUnit(u);
+                  setEditUnit(unit);
                 }
               }}
             >
               <div className="col-span-4 truncate font-medium leading-none text-zinc-100">
-                {u.number}
+                {unit.number}
               </div>
               <div className="col-span-3 truncate leading-none text-zinc-300">
-                {u.unitType}
+                {unit.unitType}
               </div>
               <div className="col-span-2 truncate leading-none text-zinc-300">
-                {u.floor ?? '—'}
+                {unit.floor ?? '—'}
               </div>
               <div className="col-span-1 text-right tabular-nums leading-none text-zinc-300">
-                {u.rooms ?? '—'}
+                {unit.rooms ?? '—'}
               </div>
               <div className="col-span-2 text-right tabular-nums leading-none text-zinc-300">
-                {u.sizeSqm ?? '—'}
+                {unit.sizeSqm ?? '—'}
               </div>
             </div>
           ))}
@@ -566,9 +601,9 @@ export function BuildingUnitsPanel({
                     id="e-number"
                     name="number"
                     value={editDraft?.number ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
-                        prev ? { ...prev, number: e.target.value } : prev,
+                        prev ? { ...prev, number: event.target.value } : prev,
                       )
                     }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
@@ -584,12 +619,12 @@ export function BuildingUnitsPanel({
                     id="e-unitType"
                     name="unitType"
                     value={editDraft?.unitType ?? 'Apartment'}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
                         prev
                           ? {
                               ...prev,
-                              unitType: e.target.value as BuildingUnitType,
+                              unitType: event.target.value as BuildingUnitType,
                             }
                           : prev,
                       )
@@ -617,9 +652,11 @@ export function BuildingUnitsPanel({
                   name="description"
                   rows={3}
                   value={editDraft?.description ?? ''}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setEditDraft((prev) =>
-                      prev ? { ...prev, description: e.target.value } : prev,
+                      prev
+                        ? { ...prev, description: event.target.value }
+                        : prev,
                     )
                   }
                   className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-700"
@@ -636,9 +673,9 @@ export function BuildingUnitsPanel({
                     id="e-floor"
                     name="floor"
                     value={editDraft?.floor ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
-                        prev ? { ...prev, floor: e.target.value } : prev,
+                        prev ? { ...prev, floor: event.target.value } : prev,
                       )
                     }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
@@ -653,9 +690,9 @@ export function BuildingUnitsPanel({
                     id="e-entrance"
                     name="entrance"
                     value={editDraft?.entrance ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
-                        prev ? { ...prev, entrance: e.target.value } : prev,
+                        prev ? { ...prev, entrance: event.target.value } : prev,
                       )
                     }
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none focus:border-zinc-700"
@@ -673,9 +710,9 @@ export function BuildingUnitsPanel({
                     id="e-sizeSqm"
                     name="sizeSqm"
                     value={editDraft?.sizeSqm ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
-                        prev ? { ...prev, sizeSqm: e.target.value } : prev,
+                        prev ? { ...prev, sizeSqm: event.target.value } : prev,
                       )
                     }
                     inputMode="decimal"
@@ -691,9 +728,9 @@ export function BuildingUnitsPanel({
                     id="e-rooms"
                     name="rooms"
                     value={editDraft?.rooms ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
-                        prev ? { ...prev, rooms: e.target.value } : prev,
+                        prev ? { ...prev, rooms: event.target.value } : prev,
                       )
                     }
                     inputMode="decimal"
@@ -716,10 +753,10 @@ export function BuildingUnitsPanel({
                     name="constructionYear"
                     inputMode="numeric"
                     value={editDraft?.constructionYear ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
                         prev
-                          ? { ...prev, constructionYear: e.target.value }
+                          ? { ...prev, constructionYear: event.target.value }
                           : prev,
                       )
                     }
@@ -738,10 +775,10 @@ export function BuildingUnitsPanel({
                     id="e-coOwnershipShare"
                     name="coOwnershipShare"
                     value={editDraft?.coOwnershipShare ?? ''}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setEditDraft((prev) =>
                         prev
-                          ? { ...prev, coOwnershipShare: e.target.value }
+                          ? { ...prev, coOwnershipShare: event.target.value }
                           : prev,
                       )
                     }

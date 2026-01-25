@@ -18,11 +18,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@buena/shared": "workspace:*",
+    "@buena/types": "workspace:*",
+    "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "cache-manager": "^6.4.3",
     "dotenv": "^17.2.3",
     "kysely": "^0.28.10",
     "kysely-ctl": "^0.20.0",

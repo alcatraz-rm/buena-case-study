@@ -3,7 +3,7 @@ import {
   TCreateUnitUnderBuilding,
   TListUnitsQuery,
   TUpdateUnitUnderBuilding,
-} from '@buena/shared';
+} from '@buena/types';
 import { createZodDto } from 'nestjs-zod';
 
 export class CreateUnitDto extends createZodDto(TCreateUnit) {}

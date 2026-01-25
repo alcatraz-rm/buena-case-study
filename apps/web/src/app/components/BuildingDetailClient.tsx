@@ -1,11 +1,6 @@
 'use client';
 
-import type {
-  AddressSuggestion,
-  Building,
-  Property,
-  Unit,
-} from '@buena/shared';
+import type { AddressSuggestion, Building, Property, Unit } from '@buena/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { COUNTRY_OPTIONS } from '../lib/countries';
@@ -55,7 +50,7 @@ export function BuildingDetailClient({
   const [streetFocused, setStreetFocused] = useState(false);
   const [houseNumberFocused, setHouseNumberFocused] = useState(false);
   const isKnownCountryCode = COUNTRY_OPTIONS.some(
-    (c) => c.code === countryCode,
+    (country) => country.code === countryCode,
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -95,12 +90,12 @@ export function BuildingDetailClient({
     const controller = new AbortController();
     setIsStreetSuggesting(true);
 
-    const t = window.setTimeout(async () => {
-      const q = `${street}${houseNumber.trim() ? ` ${houseNumber.trim()}` : ''}`;
+    const timeout = window.setTimeout(async () => {
+      const query = `${street}${houseNumber.trim() ? ` ${houseNumber.trim()}` : ''}`;
       const suggestions = await suggestAddresses({
         apiBaseUrl,
         countryCode,
-        q,
+        query,
         signal: controller.signal,
       });
       setStreetSuggestions(suggestions);
@@ -109,22 +104,18 @@ export function BuildingDetailClient({
 
     return () => {
       controller.abort();
-      window.clearTimeout(t);
+      window.clearTimeout(timeout);
       setIsStreetSuggesting(false);
     };
   }, [apiBaseUrl, countryCode, street, houseNumber, suppressSuggestions]);
-
-  useEffect(() => {
-    // Postal code lookup removed (Zippopotam removed).
-  }, []);
 
   function confirmNavigate(): boolean {
     if (!isDirty) return true;
     return window.confirm('You have unsaved changes. Leave this page?');
   }
 
-  async function onSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function onSave(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setSaveError(null);
     setSaveOk(null);
     setIsSaving(true);
@@ -144,7 +135,7 @@ export function BuildingDetailClient({
       if (!cityTrimmed) throw new Error('City is required.');
       if (!countryTrimmed) throw new Error('Country is required.');
 
-      const res = await fetch(
+      const response = await fetch(
         `${apiBaseUrl}/properties/${property.id}/buildings/${building.id}`,
         {
           method: 'PATCH',
@@ -160,12 +151,13 @@ export function BuildingDetailClient({
         },
       );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to save (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to save (${response.status})`);
       }
 
-      const updated = (await res.json()) as Building;
+      const updated = (await response.json()) as Building;
+
       setBuilding(updated);
       setBuildingName(updated.name);
       setCountryCode(updated.country);
@@ -174,6 +166,7 @@ export function BuildingDetailClient({
       setPostalCode(updated.postalCode);
       setCity(updated.city);
       setSaveOk('Saved.');
+
       router.refresh();
     } catch (err) {
       setSaveError(
@@ -192,14 +185,14 @@ export function BuildingDetailClient({
       const ok = window.confirm('Delete this building?');
       if (!ok) return;
 
-      const res = await fetch(
+      const response = await fetch(
         `${apiBaseUrl}/properties/${property.id}/buildings/${building.id}`,
         { method: 'DELETE' },
       );
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to delete (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to delete (${response.status})`);
       }
 
       router.push(`/properties/${property.id}?tab=buildings`);

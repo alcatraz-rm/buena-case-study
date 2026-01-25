@@ -6,7 +6,7 @@
 - **Backend**: NestJS (TypeScript)
 - **DB**: Postgres
 - **SQL access**: Kysely (+ `kysely-ctl` for migrations/seeds)
-- **Shared types**: `@buena/shared` (Zod schemas + inferred TS types)
+- **Shared types**: `@buena/types` (Zod schemas + inferred TS types)
 
 ### Quick start
 

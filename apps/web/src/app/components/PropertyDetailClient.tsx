@@ -6,7 +6,7 @@ import type {
   PersonOption,
   Property,
   UpdatePropertyDto,
-} from '@buena/shared';
+} from '@buena/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -58,16 +58,18 @@ export function PropertyDetailClient({
 
   useEffect(() => {
     if (!saveOk) return;
-    const t = window.setTimeout(() => setSaveOk(null), 5000);
-    return () => window.clearTimeout(t);
+    const timeout = window.setTimeout(() => setSaveOk(null), 5000);
+    return () => window.clearTimeout(timeout);
   }, [saveOk]);
 
   const managerLabelById = useMemo(() => {
-    return new Map(managers.map((m) => [m.id, m.name]));
+    return new Map(managers.map((manager) => [manager.id, manager.name]));
   }, [managers]);
 
   const accountantLabelById = useMemo(() => {
-    return new Map(accountants.map((a) => [a.id, a.name]));
+    return new Map(
+      accountants.map((accountant) => [accountant.id, accountant.name]),
+    );
   }, [accountants]);
 
   useEffect(() => {
@@ -86,11 +88,16 @@ export function PropertyDetailClient({
           cache: 'no-store',
           signal: controller.signal,
         });
-        if (!res.ok) throw new Error('Failed to load file metadata');
+
+        if (!res.ok) {
+          throw new Error('Failed to load file metadata');
+        }
+
         const json = (await res.json()) as {
           originalName: string;
           sizeBytes: number;
         };
+
         setDeclarationMeta({
           originalName: json.originalName,
           sizeBytes: json.sizeBytes,
@@ -106,12 +113,23 @@ export function PropertyDetailClient({
   }, [apiBaseUrl, property.declarationOfDivisionFileId]);
 
   function formatBytes(bytes: number): string {
-    if (!Number.isFinite(bytes) || bytes < 0) return '—';
-    if (bytes < 1024) return `${bytes} B`;
+    if (!Number.isFinite(bytes) || bytes < 0) {
+      return '—';
+    }
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+
     const kb = bytes / 1024;
-    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    if (kb < 1024) {
+      return `${kb.toFixed(1)} KB`;
+    }
+
     const mb = kb / 1024;
-    if (mb < 1024) return `${mb.toFixed(1)} MB`;
+    if (mb < 1024) {
+      return `${mb.toFixed(1)} MB`;
+    }
+
     const gb = mb / 1024;
     return `${gb.toFixed(1)} GB`;
   }
@@ -119,22 +137,23 @@ export function PropertyDetailClient({
   async function downloadDeclarationOfDivision(fileId: string) {
     try {
       setIsDeclarationDownloading(true);
-      const res = await fetch(`${apiBaseUrl}/stored-files/${fileId}`, {
+      const response = await fetch(`${apiBaseUrl}/stored-files/${fileId}`, {
         cache: 'no-store',
       });
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Download failed (${res.status})`);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Download failed (${response.status})`);
       }
 
-      const blob = await res.blob();
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = declarationMeta?.originalName || 'declaration';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = declarationMeta?.originalName ?? 'declaration';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Download failed.');
@@ -144,19 +163,25 @@ export function PropertyDetailClient({
   }
 
   async function removeDeclarationOfDivision() {
-    if (!property.declarationOfDivisionFileId) return;
+    if (!property.declarationOfDivisionFileId) {
+      return;
+    }
+
     try {
       setIsDeclarationRemoving(true);
       setSaveError(null);
-      const res = await fetch(
+
+      const response = await fetch(
         `${apiBaseUrl}/properties/${property.id}/declaration-of-division`,
         { method: 'DELETE' },
       );
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to remove file (${res.status})`);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to remove file (${response.status})`);
       }
-      const updated = (await res.json()) as Property;
+      const updated = (await response.json()) as Property;
+
       setProperty(updated);
       setSaveOk('Removed.');
       router.refresh();
@@ -173,15 +198,17 @@ export function PropertyDetailClient({
       setSaveError(null);
       const upload = new FormData();
       upload.append('file', file);
-      const res = await fetch(
+
+      const response = await fetch(
         `${apiBaseUrl}/properties/${property.id}/declaration-of-division`,
         { method: 'POST', body: upload },
       );
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Upload failed (${res.status})`);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Upload failed (${response.status})`);
       }
-      const updated = (await res.json()) as Property;
+      const updated = (await response.json()) as Property;
       setProperty(updated);
       setSaveOk('Uploaded.');
       router.refresh();
@@ -199,10 +226,11 @@ export function PropertyDetailClient({
     accountantId !== property.accountantId;
 
   useEffect(() => {
-    function onBeforeUnload(e: BeforeUnloadEvent) {
-      if (!isDirty) return;
-      e.preventDefault();
-      e.returnValue = '';
+    function onBeforeUnload(event: BeforeUnloadEvent) {
+      if (!isDirty) {
+        return;
+      }
+      event.preventDefault();
     }
 
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -210,24 +238,31 @@ export function PropertyDetailClient({
   }, [isDirty]);
 
   function confirmNavigate(): boolean {
-    if (!isDirty) return true;
+    if (!isDirty) {
+      return true;
+    }
     return window.confirm('You have unsaved changes. Leave this page?');
   }
 
-  async function onSave(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function onSave(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setSaveError(null);
     setSaveOk(null);
     setIsSaving(true);
 
     try {
       const nextName = name.trim();
-      if (!nextName) throw new Error('Name is required.');
-      if (!Number.isFinite(managerId)) throw new Error('Manager is required.');
-      if (!Number.isFinite(accountantId))
+      if (!nextName) {
+        throw new Error('Name is required.');
+      }
+      if (!Number.isFinite(managerId)) {
+        throw new Error('Manager is required.');
+      }
+      if (!Number.isFinite(accountantId)) {
         throw new Error('Accountant is required.');
+      }
 
-      const res = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
+      const response = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -238,12 +273,13 @@ export function PropertyDetailClient({
         } satisfies UpdatePropertyDto),
       });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to save (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to save (${response.status})`);
       }
 
-      const updated = (await res.json()) as Property;
+      const updated = (await response.json()) as Property;
+
       setProperty(updated);
       setName(updated.name);
       setManagementType(updated.managementType);
@@ -265,14 +301,16 @@ export function PropertyDetailClient({
     setIsDeleting(true);
     try {
       const ok = window.confirm('Delete this property?');
-      if (!ok) return;
+      if (!ok) {
+        return;
+      }
 
-      const res = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
+      const response = await fetch(`${apiBaseUrl}/properties/${property.id}`, {
         method: 'DELETE',
       });
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Failed to delete (${res.status})`);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Failed to delete (${response.status})`);
       }
 
       router.push('/');
@@ -432,7 +470,7 @@ export function PropertyDetailClient({
                   id="name"
                   name="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(event) => setName(event.target.value)}
                   className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-zinc-700"
                   required
                 />
@@ -451,8 +489,8 @@ export function PropertyDetailClient({
                     name="managementType"
                     className="h-10 rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     value={managementType}
-                    onChange={(e) =>
-                      setManagementType(e.target.value as ManagementType)
+                    onChange={(event) =>
+                      setManagementType(event.target.value as ManagementType)
                     }
                     required
                   >
@@ -627,12 +665,14 @@ export function PropertyDetailClient({
                     name="accountantId"
                     className="h-10 w-full truncate rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-10 text-sm text-zinc-100 outline-none focus:border-zinc-700"
                     value={String(accountantId)}
-                    onChange={(e) => setAccountantId(Number(e.target.value))}
+                    onChange={(event) =>
+                      setAccountantId(Number(event.target.value))
+                    }
                     required
                   >
-                    {accountants.map((a) => (
-                      <option key={a.id} value={String(a.id)}>
-                        {a.name} ({a.email})
+                    {accountants.map((accountant) => (
+                      <option key={accountant.id} value={String(accountant.id)}>
+                        {accountant.name} ({accountant.email})
                       </option>
                     ))}
                   </select>

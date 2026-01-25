@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ManagementTypeSchema } from './property';
 import { BuildingUnitTypeSchema } from './unit';
 
-// These schemas are for LLM extraction output.
+// These schemas are for LLM extraction output
 
 export const ExtractedUnitSchema = z
   .object({

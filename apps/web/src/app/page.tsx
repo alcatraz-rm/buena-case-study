@@ -1,4 +1,4 @@
-import type { PersonOption, PropertyListItem } from '@buena/shared';
+import type { PersonOption, PropertyListItem } from '@buena/types';
 import { PropertiesPageClient } from './components/PropertiesPageClient';
 import {
   getApiBaseUrlForClient,
@@ -7,35 +7,35 @@ import {
 
 async function getProperties(): Promise<PropertyListItem[]> {
   const baseUrl = getApiBaseUrlForServer();
-  const res = await fetch(`${baseUrl}/properties`, { cache: 'no-store' });
+  const response = await fetch(`${baseUrl}/properties`, { cache: 'no-store' });
 
-  if (!res.ok) {
-    throw new Error(`Failed to load properties (${res.status})`);
+  if (!response.ok) {
+    throw new Error(`Failed to load properties (${response.status})`);
   }
 
-  return (await res.json()) as PropertyListItem[];
+  return (await response.json()) as PropertyListItem[];
 }
 
 async function getManagers(): Promise<PersonOption[]> {
   const baseUrl = getApiBaseUrlForServer();
-  const res = await fetch(`${baseUrl}/managers`, { cache: 'no-store' });
+  const response = await fetch(`${baseUrl}/managers`, { cache: 'no-store' });
 
-  if (!res.ok) {
-    throw new Error(`Failed to load managers (${res.status})`);
+  if (!response.ok) {
+    throw new Error(`Failed to load managers (${response.status})`);
   }
 
-  return (await res.json()) as PersonOption[];
+  return (await response.json()) as PersonOption[];
 }
 
 async function getAccountants(): Promise<PersonOption[]> {
   const baseUrl = getApiBaseUrlForServer();
-  const res = await fetch(`${baseUrl}/accountants`, { cache: 'no-store' });
+  const response = await fetch(`${baseUrl}/accountants`, { cache: 'no-store' });
 
-  if (!res.ok) {
-    throw new Error(`Failed to load accountants (${res.status})`);
+  if (!response.ok) {
+    throw new Error(`Failed to load accountants (${response.status})`);
   }
 
-  return (await res.json()) as PersonOption[];
+  return (await response.json()) as PersonOption[];
 }
 
 export default async function Home() {
@@ -45,6 +45,7 @@ export default async function Home() {
     getAccountants(),
   ]);
   const apiBaseUrl = getApiBaseUrlForClient();
+
   return (
     <PropertiesPageClient
       properties={properties}

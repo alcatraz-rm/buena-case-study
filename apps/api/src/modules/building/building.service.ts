@@ -11,13 +11,13 @@ export class BuildingService {
   constructor(private readonly kysely: KyselyService) {}
 
   async create(dto: CreateBuildingDto): Promise<Building> {
-    const created = await this.kysely.db
+    const building = await this.kysely.db
       .insertInto('building')
       .values(dto)
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    return created;
+    return building;
   }
 
   async findAll(propertyId?: number): Promise<Building[]> {
@@ -53,7 +53,7 @@ export class BuildingService {
     propertyId: number,
     dto: UpdateBuildingUnderPropertyDto,
   ): Promise<Building> {
-    const result = await this.kysely.db
+    const building = await this.kysely.db
       .updateTable('building')
       .set(dto)
       .where('building.id', '=', id)
@@ -62,15 +62,15 @@ export class BuildingService {
       .returningAll()
       .executeTakeFirst();
 
-    if (!result) {
+    if (!building) {
       throw new NotFoundException('Building not found');
     }
 
-    return result;
+    return building;
   }
 
   async remove(id: number, propertyId: number): Promise<void> {
-    const result = await this.kysely.db
+    const building = await this.kysely.db
       .updateTable('building')
       .set({ deletedAt: new Date() })
       .where('building.id', '=', id)
@@ -79,7 +79,7 @@ export class BuildingService {
       .returningAll()
       .executeTakeFirst();
 
-    if (!result) {
+    if (!building) {
       throw new NotFoundException('Building not found');
     }
   }
