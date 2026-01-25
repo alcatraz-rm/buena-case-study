@@ -17,7 +17,7 @@ import { UnitModule } from './modules/unit/unit.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.local', '.env', '../../.env'],
+      envFilePath: ['.env.local', '.env', '../../.env.local', '../../.env'],
     }),
     AccountantModule,
     BuildingModule,
